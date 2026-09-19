@@ -1,7 +1,7 @@
 package com.uniquindio.segundaMano.domain.entity;
 
 import com.uniquindio.segundaMano.domain.exception.ReglaDominioException;
-import com.uniquindio.segundaMano.domain.valueobject.RachaConfianza;
+import com.uniquindio.segundaMano.domain.valueObject.RachaConfianza;
 
 import java.util.Objects;
 

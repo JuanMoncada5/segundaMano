@@ -1,7 +1,7 @@
 package com.uniquindio.segundaMano.domain.entity;
 
 import com.uniquindio.segundaMano.domain.exception.ReglaDominioException;
-import com.uniquindio.segundaMano.domain.valueobject.EstadoOferta;
+import com.uniquindio.segundaMano.domain.valueObject.EstadoOferta;
 
 import java.math.BigDecimal;
 import java.util.Objects;

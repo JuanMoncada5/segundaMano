@@ -1,4 +1,4 @@
-package com.uniquindio.segundaMano.domain.valueobject;
+package com.uniquindio.segundaMano.domain.valueObject;
 
 import com.uniquindio.segundaMano.domain.exception.ReglaDominioException;
 
