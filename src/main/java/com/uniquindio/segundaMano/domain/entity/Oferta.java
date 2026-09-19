@@ -25,7 +25,7 @@ public class Oferta {
         this.estado = EstadoOferta.PENDIENTE;
     }
 
-    public static Oferta crear(Publicacion publicacion, UniCambista oferente, BigDecimal montoPropuesto) {
+    static Oferta crear(Publicacion publicacion, UniCambista oferente, BigDecimal montoPropuesto) {
         if (oferente.equals(publicacion.getDueno())) {
             throw new ReglaDominioException("El dueño de la publicación no puede ofertar sobre su propia publicación");
         }
