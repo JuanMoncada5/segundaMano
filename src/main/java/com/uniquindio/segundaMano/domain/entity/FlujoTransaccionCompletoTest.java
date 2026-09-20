@@ -25,6 +25,27 @@ class FlujoTransaccionCompletoTest {
         Publicacion publicacion = Publicacion.publicar(vendedor, "Calculadora Casio", new BigDecimal("150000"));
         assertEquals(EstadoPublicacion.ACTIVA, publicacion.getEstado());
 
-        // El resto del flujo (Oferta -> Transaccion) se completa en el siguiente commit
+        // 3. El comprador hace una oferta válida (>= 50% del precio) a través de la Publicacion (raíz del agregado)
+        Oferta oferta = publicacion.recibirOferta(comprador, new BigDecimal("100000"));
+        assertEquals(EstadoOferta.PENDIENTE, oferta.getEstado());
+
+        // 4. El vendedor acepta la oferta, también a través de la Publicacion
+        publicacion.aceptarOferta(oferta.getId(), vendedor);
+        assertEquals(EstadoOferta.ACEPTADA, oferta.getEstado());
+        assertEquals(EstadoPublicacion.EN_PROCESO, publicacion.getEstado());
+
+        // 5. Se inicia la Transaccion a partir de la Oferta aceptada (Agregado independiente)
+        Transaccion transaccion = Transaccion.iniciar(oferta);
+        assertEquals(EstadoTransaccion.PENDIENTE, transaccion.getEstado());
+
+        // 6. Se asigna un EncuentroSeguro
+        transaccion.asignarEncuentroSeguro(new EncuentroSeguro("Biblioteca Central"));
+
+        // 7. Ambos confirman -> la Transaccion queda Completada
+        transaccion.confirmar(comprador);
+        assertEquals(EstadoTransaccion.PENDIENTE, transaccion.getEstado()); // aún falta el vendedor
+
+        transaccion.confirmar(vendedor);
+        assertEquals(EstadoTransaccion.COMPLETADA, transaccion.getEstado());
     }
 }
