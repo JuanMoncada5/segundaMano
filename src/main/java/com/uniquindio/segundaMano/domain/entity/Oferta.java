@@ -41,18 +41,18 @@ public class Oferta {
         }
     }
 
-    public void aceptar(UniCambista dueno) {
+    void aceptar(UniCambista dueno) {
         validarDueno(dueno);
         this.estado = EstadoOferta.ACEPTADA;
         this.publicacion.marcarEnProceso();
     }
 
-    public void rechazar(UniCambista dueno) {
+    void rechazar(UniCambista dueno) {
         validarDueno(dueno);
         this.estado = EstadoOferta.RECHAZADA;
     }
 
-    public void contraofertar(BigDecimal nuevoMonto) {
+    void contraofertar(BigDecimal nuevoMonto) {
         if (this.estado != EstadoOferta.PENDIENTE) {
             throw new ReglaDominioException("Solo se puede contraofertar una Oferta pendiente");
         }
