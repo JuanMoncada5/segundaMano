@@ -13,8 +13,7 @@ public class ConfirmarTransaccionUseCase {
     }
 
     public Transaccion ejecutar(String idTransaccion, UniCambista quienConfirma) {
-        Transaccion transaccion = transaccionRepository.buscarPorId(idTransaccion)
-                .orElseThrow(() -> new ReglaDominioException("La Transacción no existe"));
+        Transaccion transaccion = transaccionRepository.buscarPorId(idTransaccion).orElseThrow(() -> new ReglaDominioException("La Transacción no existe"));
         transaccion.confirmar(quienConfirma);
         transaccionRepository.guardar(transaccion);
         return transaccion;
