@@ -4,6 +4,7 @@ import com.uniquindio.segundaMano.domain.valueObject.EncuentroSeguro;
 import com.uniquindio.segundaMano.domain.valueObject.EstadoOferta;
 import com.uniquindio.segundaMano.domain.valueObject.EstadoPublicacion;
 import com.uniquindio.segundaMano.domain.valueObject.EstadoTransaccion;
+import com.uniquindio.segundaMano.domain.valueObject.ZonaCampus;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -39,7 +40,7 @@ class FlujoTransaccionCompletoTest {
         assertEquals(EstadoTransaccion.PENDIENTE, transaccion.getEstado());
 
         // 6. Se asigna un EncuentroSeguro
-        transaccion.asignarEncuentroSeguro(new EncuentroSeguro("Biblioteca Central"));
+        transaccion.asignarEncuentroSeguro(new EncuentroSeguro(ZonaCampus.BIBLIOTECA, "Central"));
 
         // 7. Ambos confirman -> la Transaccion queda Completada
         transaccion.confirmar(comprador);
