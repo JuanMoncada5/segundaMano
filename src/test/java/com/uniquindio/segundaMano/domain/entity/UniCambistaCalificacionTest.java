@@ -66,4 +66,18 @@ class UniCambistaCalificacionTest {
         // Act & Assert
         assertThrows(ReglaDominioException.class, () -> comprador.calificar(vendedor, pendiente, 5));
     }
+
+    @Test
+    void noDebePermitirCalificarDosVecesLaMismaTransaccion() {
+        // Arrange
+        UniCambista vendedor = nuevoUniCambista("vendedor@uniquindio.edu.co", "Laura");
+        UniCambista comprador = nuevoUniCambista("comprador@uniquindio.edu.co", "Juan");
+        Transaccion transaccion = transaccionCompletada(vendedor, comprador);
+        comprador.calificar(vendedor, transaccion, 5);
+
+        // Act & Assert
+        assertThrows(ReglaDominioException.class, () -> comprador.calificar(vendedor, transaccion, 1));
+        assertEquals(1, vendedor.getRachaConfianza().totalTransacciones());
+        assertEquals(5.0, vendedor.getRachaConfianza().promedioEstrellas(), 0.001);
+    }
 }

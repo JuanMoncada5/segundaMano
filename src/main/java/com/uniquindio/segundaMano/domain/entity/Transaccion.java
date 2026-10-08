@@ -20,6 +20,8 @@ public class Transaccion {
     private boolean confirmadaPorComprador;
     private boolean confirmadaPorVendedor;
     private EstadoTransaccion estado;
+    private boolean calificadaPorComprador;
+    private boolean calificadaPorVendedor;
 
     private Transaccion(Publicacion publicacion, UniCambista comprador, UniCambista vendedor, BigDecimal montoAcordado) {
         this.id = UUID.randomUUID().toString();
@@ -33,9 +35,10 @@ public class Transaccion {
     }
 
     public static Transaccion iniciar(Oferta ofertaAceptada) {
-        if (ofertaAceptada.getEstado() != EstadoOferta.ACEPTADA) {
+        if (ofertaAceptada == null || ofertaAceptada.getEstado() != EstadoOferta.ACEPTADA) {
             throw new ReglaDominioException("Solo se puede iniciar una Transacción a partir de una Oferta aceptada");
         }
+        ofertaAceptada.vincularTransaccion(); // una Oferta solo puede originar una Transacción
         return new Transaccion(
                 ofertaAceptada.getPublicacion(),
                 ofertaAceptada.getOferente(),
@@ -45,10 +48,19 @@ public class Transaccion {
     }
 
     public void asignarEncuentroSeguro(EncuentroSeguro encuentroSeguro) {
+        if (encuentroSeguro == null) {
+            throw new ReglaDominioException("El EncuentroSeguro es obligatorio");
+        }
+        if (estado == EstadoTransaccion.COMPLETADA) {
+            throw new ReglaDominioException("No se puede cambiar el EncuentroSeguro de una Transacción Completada");
+        }
         this.encuentroSeguro = encuentroSeguro;
     }
 
     public void confirmar(UniCambista quienConfirma) {
+        if (quienConfirma == null) {
+            throw new ReglaDominioException("Debe indicarse quién confirma la Transacción");
+        }
         if (estado == EstadoTransaccion.COMPLETADA) {
             throw new ReglaDominioException("La Transacción ya está Completada");
         }
@@ -61,6 +73,25 @@ public class Transaccion {
         }
         if (confirmadaPorComprador && confirmadaPorVendedor) {
             this.estado = EstadoTransaccion.COMPLETADA;
+        }
+    }
+
+    /**
+     * Lo invoca UniCambista.calificar: cada participante califica una sola vez por Transacción.
+     */
+    void registrarCalificacionDe(UniCambista quienCalifica) {
+        if (quienCalifica.equals(comprador)) {
+            if (calificadaPorComprador) {
+                throw new ReglaDominioException("El comprador ya calificó esta Transacción");
+            }
+            calificadaPorComprador = true;
+        } else if (quienCalifica.equals(vendedor)) {
+            if (calificadaPorVendedor) {
+                throw new ReglaDominioException("El vendedor ya calificó esta Transacción");
+            }
+            calificadaPorVendedor = true;
+        } else {
+            throw new ReglaDominioException("Solo se califican Transacciones en las que se participó");
         }
     }
 

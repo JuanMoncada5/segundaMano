@@ -36,6 +36,9 @@ public class UniCambista {
     }
 
     public void calificar(UniCambista otro, Transaccion transaccion, int estrellas) {
+        if (otro == null || transaccion == null) {
+            throw new ReglaDominioException("Debe indicarse a quién y qué Transacción se califica");
+        }
         if (transaccion.getEstado() != EstadoTransaccion.COMPLETADA) {
             throw new ReglaDominioException("Solo se pueden calificar Transacciones completadas");
         }
@@ -48,6 +51,7 @@ public class UniCambista {
         if (estrellas < 1 || estrellas > 5) {
             throw new ReglaDominioException("La calificación debe estar entre 1 y 5 estrellas");
         }
+        transaccion.registrarCalificacionDe(this); // impide calificar dos veces la misma Transacción
         otro.recibirCalificacion(estrellas);
     }
 

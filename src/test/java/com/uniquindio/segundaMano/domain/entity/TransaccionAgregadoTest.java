@@ -1,7 +1,9 @@
 package com.uniquindio.segundaMano.domain.entity;
 
 import com.uniquindio.segundaMano.domain.exception.ReglaDominioException;
+import com.uniquindio.segundaMano.domain.valueObject.EncuentroSeguro;
 import com.uniquindio.segundaMano.domain.valueObject.EstadoTransaccion;
+import com.uniquindio.segundaMano.domain.valueObject.ZonaCampus;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -77,5 +79,39 @@ class TransaccionAgregadoTest {
 
         // Assert
         assertEquals(new BigDecimal("100000"), transaccion.getMontoAcordado());
+    }
+
+    @Test
+    void unaOfertaAceptadaSoloPuedeOriginarUnaTransaccion() {
+        // Arrange
+        UniCambista vendedor = nuevoUniCambista("vendedor@uniquindio.edu.co", "Laura");
+        UniCambista comprador = nuevoUniCambista("comprador@uniquindio.edu.co", "Juan");
+        Publicacion publicacion = Publicacion.publicar(vendedor, "Calculadora Casio", new BigDecimal("150000"));
+        Oferta oferta = publicacion.recibirOferta(comprador, new BigDecimal("100000"));
+        publicacion.aceptarOferta(oferta.getId(), vendedor);
+        Transaccion.iniciar(oferta);
+
+        // Act & Assert
+        assertThrows(ReglaDominioException.class, () -> Transaccion.iniciar(oferta));
+    }
+
+    @Test
+    void noDebeCambiarseElEncuentroSeguroDeUnaTransaccionCompletada() {
+        // Arrange
+        UniCambista vendedor = nuevoUniCambista("vendedor@uniquindio.edu.co", "Laura");
+        UniCambista comprador = nuevoUniCambista("comprador@uniquindio.edu.co", "Juan");
+        Publicacion publicacion = Publicacion.publicar(vendedor, "Calculadora Casio", new BigDecimal("150000"));
+        Oferta oferta = publicacion.recibirOferta(comprador, new BigDecimal("100000"));
+        publicacion.aceptarOferta(oferta.getId(), vendedor);
+        Transaccion transaccion = Transaccion.iniciar(oferta);
+        EncuentroSeguro biblioteca = new EncuentroSeguro(ZonaCampus.BIBLIOTECA);
+        transaccion.asignarEncuentroSeguro(biblioteca);
+        transaccion.confirmar(comprador);
+        transaccion.confirmar(vendedor);
+
+        // Act & Assert
+        assertThrows(ReglaDominioException.class,
+                () -> transaccion.asignarEncuentroSeguro(new EncuentroSeguro(ZonaCampus.CANCHAS)));
+        assertEquals(biblioteca, transaccion.getEncuentroSeguro());
     }
 }
