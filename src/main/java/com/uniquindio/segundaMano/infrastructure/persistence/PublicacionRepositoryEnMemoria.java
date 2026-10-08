@@ -1,4 +1,4 @@
-package com.uniquindio.segundaMano.infraestructure.persistence;
+package com.uniquindio.segundaMano.infrastructure.persistence;
 
 import com.uniquindio.segundaMano.domain.entity.Publicacion;
 import com.uniquindio.segundaMano.domain.repository.PublicacionRepository;

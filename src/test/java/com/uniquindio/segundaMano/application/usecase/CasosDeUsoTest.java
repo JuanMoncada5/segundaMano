@@ -10,8 +10,8 @@ import com.uniquindio.segundaMano.domain.repository.TransaccionRepository;
 import com.uniquindio.segundaMano.domain.valueObject.EstadoOferta;
 import com.uniquindio.segundaMano.domain.valueObject.EstadoPublicacion;
 import com.uniquindio.segundaMano.domain.valueObject.EstadoTransaccion;
-import com.uniquindio.segundaMano.infraestructure.persistence.PublicacionRepositoryEnMemoria;
-import com.uniquindio.segundaMano.infraestructure.persistence.TransaccionRepositoryEnMemoria;
+import com.uniquindio.segundaMano.infrastructure.persistence.PublicacionRepositoryEnMemoria;
+import com.uniquindio.segundaMano.infrastructure.persistence.TransaccionRepositoryEnMemoria;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
