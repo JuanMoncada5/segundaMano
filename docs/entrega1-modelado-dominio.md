@@ -27,10 +27,11 @@ Las 3 pruebas: **identidad** (¿dos objetos con los mismos datos siguen siendo d
 |---|---|---|---|---|
 | UniCambista | Entidad (raíz Agregado 1) | Sí: su correo institucional | No: no se puede cambiar por otro con los mismos datos | Se registra, se verifica y acumula reputación |
 | Publicacion | Entidad (raíz Agregado 2) | Sí: `codigo` (UUID) | No | ACTIVA → EN_PROCESO / EXPIRADA / ELIMINADA |
-| Oferta | Entidad interna del Agregado 2 | Sí: `id` | No | PENDIENTE → ACEPTADA / RECHAZADA / CONTRAOFERTADA |
+| Oferta | Entidad interna del Agregado 2 | Sí: `id` | No | PENDIENTE → ACEPTADA / RECHAZADA / CONTRAOFERTADA → ACEPTADA (si el comprador acepta la contraoferta) |
 | Transaccion | Entidad (raíz Agregado 3) | Sí: `id` | No | PENDIENTE → COMPLETADA |
 | RachaConfianza | Value Object (record) | No | Sí: al calificar se reemplaza por una nueva con los valores actualizados | No tiene ciclo propio |
-| EncuentroSeguro | Value Object (record) | No: dos "Biblioteca" son lo mismo | Sí | No |
+| EncuentroSeguro | Value Object (record: `zona` + `referencia` opcional) | No: dos "Biblioteca - Central" son lo mismo | Sí | No |
+| ZonaCampus | Value Object (enum) | No | Sí | No (lista cerrada de zonas del Campus) |
 | VigenciaAcademica | Value Object (record) | No: curso + semestre iguales son lo mismo | Sí | No |
 | EstadoPublicacion, EstadoOferta, EstadoTransaccion | Value Objects (enum) | No | Sí | No (son valores, el ciclo lo tiene la entidad que los usa) |
 
@@ -38,9 +39,9 @@ Las 3 pruebas: **identidad** (¿dos objetos con los mismos datos siguen siendo d
 
 Detalle completo, diagrama Mermaid y las invariantes de cada raíz en `docs/agregados-unisegundamano.md`.
 
-- **Agregado 2 — Publicacion** (contiene `Oferta`): 4 invariantes. Protegidas en `Publicacion.recibirOferta`, `Oferta.crear` (package-private) y los métodos de `Oferta` que solo puede invocar `Publicacion`.
-- **Agregado 3 — Transaccion**: 4 invariantes. Protegidas en `Transaccion.iniciar`, `confirmar` y en el record `EncuentroSeguro`.
-- **Agregado 1 — UniCambista**: 3 invariantes. Protegidas en `UniCambista.calificar` (único camino para cambiar la `RachaConfianza`, que se modifica solo con un método privado).
+- **Agregado 2 — Publicacion** (contiene `Oferta`): 6 invariantes. Protegidas en `Publicacion.publicar`, `recibirOferta`, `aceptarOferta`, `contraofertar`, `aceptarContraoferta`, `eliminarLogicamente`, en `Oferta.crear` (package-private) y en los métodos de `Oferta` que solo puede invocar `Publicacion`. `marcarEnProceso()` es privado: solo la raíz cambia su estado.
+- **Agregado 3 — Transaccion**: 6 invariantes. Protegidas en `Transaccion.iniciar`, `confirmar`, `asignarEncuentroSeguro`, en el record `EncuentroSeguro` y en el enum `ZonaCampus`.
+- **Agregado 1 — UniCambista**: 4 invariantes. Protegidas en `UniCambista.calificar` (único camino para cambiar la `RachaConfianza`, que se modifica solo con un método privado) y en `Transaccion.registrarCalificacionDe` (una calificación por participante).
 
 Las dos raíces principales para esta entrega son `Publicacion` y `Transaccion`: tienen ciclos de vida independientes (una Publicación puede eliminarse lógicamente sin afectar las Transacciones ya completadas).
 
@@ -57,7 +58,8 @@ Las dos raíces principales para esta entrega son `Publicacion` y `Transaccion`:
 | 3 | PublicarArticulo | Vendedor | PublicacionRepository | Programado |
 | 4 | OfertarArticulo | Comprador | PublicacionRepository | Programado |
 | 5 | AceptarOferta (inicia la Transacción) | Vendedor | PublicacionRepository, TransaccionRepository | Programado |
-| 6 | RechazarOContraofertar | Vendedor | PublicacionRepository | Documentado |
+| 6 | RechazarOContraofertar | Vendedor | PublicacionRepository | Documentado (la regla ya está en `Publicacion.rechazarOferta` / `contraofertar`) |
+| 6b | AceptarContraoferta | Comprador | PublicacionRepository, TransaccionRepository | Documentado (la regla ya está en `Publicacion.aceptarContraoferta`) |
 | 7 | ConfirmarTransaccion | Comprador y vendedor | TransaccionRepository | Programado |
 | 8 | CalificarUniCambista | Comprador y vendedor | TransaccionRepository, UniCambistaRepository | Documentado (la regla ya está en `UniCambista.calificar`) |
 
@@ -110,7 +112,7 @@ Los DTOs usan identificadores (correo, código) y no objetos de dominio: el caso
 com.uniquindio.segundaMano
 ├── domain
 │   ├── entity            UniCambista, Publicacion, Oferta, Transaccion
-│   ├── valueObject       EstadoOferta, EstadoPublicacion, EstadoTransaccion,
+│   ├── valueObject       EstadoOferta, EstadoPublicacion, EstadoTransaccion, ZonaCampus,
 │   │                     RachaConfianza, EncuentroSeguro, VigenciaAcademica
 │   ├── exception         ReglaDominioException
 │   └── repository        PublicacionRepository, TransaccionRepository
@@ -128,14 +130,15 @@ El paquete `domain` no importa Spring, JPA ni Lombok.
 | Clase de prueba | Qué cubre | Pruebas |
 |---|---|---|
 | RachaConfianzaTest | Value Object | 2 |
-| EncuentroSeguroTest | Value Object | 2 |
+| EncuentroSeguroTest | Value Object | 3 |
 | UniCambistaTest | Entidad (identidad y registro) | 2 |
-| UniCambistaCalificacionTest | Entidad / Agregado 1 (calificar) | 3 |
-| PublicacionOfertaAgregadoTest | Invariantes del Agregado Publicacion | 2 |
-| TransaccionAgregadoTest | Invariantes del Agregado Transaccion | 4 |
+| UniCambistaCalificacionTest | Entidad / Agregado 1 (calificar, una sola vez) | 4 |
+| PublicacionOfertaAgregadoTest | Invariantes del Agregado Publicacion (50%, dueño) | 2 |
+| PublicacionInvariantesTest | Invariantes del Agregado Publicacion (estados de la Oferta, contraoferta, publicar, eliminar) | 7 |
+| TransaccionAgregadoTest | Invariantes del Agregado Transaccion | 6 |
 | FlujoTransaccionCompletoTest | Flujo completo de dominio | 1 |
 | CasosDeUsoTest | Casos de uso con los Repository en memoria | 4 |
-| **Total** | | **20** |
+| **Total** | | **31** |
 
 ## 11. Organización en Git
 
