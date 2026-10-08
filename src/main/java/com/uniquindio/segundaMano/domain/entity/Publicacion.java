@@ -30,47 +30,83 @@ public class Publicacion {
     }
 
     public static Publicacion publicar(UniCambista dueno, String titulo, BigDecimal valor) {
+        if (dueno == null) {
+            throw new ReglaDominioException("La Publicación debe tener un dueño");
+        }
         if (!dueno.puedeCrearPublicacion()) {
             throw new ReglaDominioException("El UniCambista debe verificar su correo antes de publicar");
+        }
+        if (titulo == null || titulo.isBlank()) {
+            throw new ReglaDominioException("La Publicación debe tener un título");
+        }
+        if (valor == null || valor.signum() <= 0) {
+            throw new ReglaDominioException("El valor de la Publicación debe ser mayor a cero");
         }
         return new Publicacion(dueno, titulo, valor);
     }
 
-    public void marcarEnProceso() {
-        if (this.estado != EstadoPublicacion.ACTIVA) {
-            throw new ReglaDominioException("Solo una publicación activa puede pasar a proceso de compra");
-        }
+    /** Solo la propia raíz pasa la Publicación a EN_PROCESO, al aceptarse una Oferta. */
+    private void marcarEnProceso() {
         this.estado = EstadoPublicacion.EN_PROCESO;
     }
 
-    public void eliminarLogicamente() {
+    /**
+     * Regla 4: una Publicación nunca se borra físicamente; solo su dueño la marca como ELIMINADA.
+     * Si tiene una Transacción activa, la Transacción se conserva por trazabilidad.
+     */
+    public void eliminarLogicamente(UniCambista quienElimina) {
+        validarDueno(quienElimina);
+        if (this.estado == EstadoPublicacion.ELIMINADA) {
+            throw new ReglaDominioException("La Publicación ya está eliminada");
+        }
         this.estado = EstadoPublicacion.ELIMINADA;
     }
 
     // ---- Único punto de entrada al Agregado para gestionar Ofertas ----
 
     public Oferta recibirOferta(UniCambista oferente, BigDecimal monto) {
-        if (this.estado != EstadoPublicacion.ACTIVA) {
-            throw new ReglaDominioException("Solo se puede ofertar sobre una publicación activa");
-        }
+        validarActiva("Solo se puede ofertar sobre una publicación activa");
         Oferta nueva = Oferta.crear(this, oferente, monto);
         this.ofertas.add(nueva);
         return nueva;
     }
 
     public void aceptarOferta(String idOferta, UniCambista dueno) {
+        validarActiva("Solo una publicación activa puede pasar a proceso de compra");
         Oferta oferta = buscarOferta(idOferta);
         oferta.aceptar(dueno);
+        marcarEnProceso();
     }
 
     public void rechazarOferta(String idOferta, UniCambista dueno) {
+        validarActiva("Solo se pueden rechazar Ofertas de una publicación activa");
         Oferta oferta = buscarOferta(idOferta);
         oferta.rechazar(dueno);
     }
 
-    public void contraofertar(String idOferta, BigDecimal nuevoMonto) {
+    public void contraofertar(String idOferta, UniCambista dueno, BigDecimal nuevoMonto) {
+        validarActiva("Solo se puede contraofertar sobre una publicación activa");
         Oferta oferta = buscarOferta(idOferta);
-        oferta.contraofertar(nuevoMonto);
+        oferta.contraofertar(dueno, nuevoMonto);
+    }
+
+    public void aceptarContraoferta(String idOferta, UniCambista oferente) {
+        validarActiva("Solo una publicación activa puede pasar a proceso de compra");
+        Oferta oferta = buscarOferta(idOferta);
+        oferta.aceptarContraoferta(oferente);
+        marcarEnProceso();
+    }
+
+    private void validarActiva(String mensaje) {
+        if (this.estado != EstadoPublicacion.ACTIVA) {
+            throw new ReglaDominioException(mensaje);
+        }
+    }
+
+    private void validarDueno(UniCambista quien) {
+        if (quien == null || !quien.equals(this.dueno)) {
+            throw new ReglaDominioException("Solo el dueño puede realizar esta acción sobre la Publicación");
+        }
     }
 
     private Oferta buscarOferta(String idOferta) {
