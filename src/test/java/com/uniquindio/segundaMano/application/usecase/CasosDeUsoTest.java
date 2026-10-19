@@ -96,8 +96,7 @@ class CasosDeUsoTest {
     void publicarArticuloConCorreoNoRegistradoLanzaExcepcionDeDominio() {
         // Arrange
         PublicarArticuloUseCase publicar = new PublicarArticuloUseCase(publicaciones, uniCambistas);
-        PublicarArticuloRequest request =
-                new PublicarArticuloRequest("fantasma@uqvirtual.edu.co", "Libro", new BigDecimal("50000"));
+        PublicarArticuloRequest request = new PublicarArticuloRequest("fantasma@uqvirtual.edu.co", "Libro", new BigDecimal("50000"));
 
         // Act & Assert
         assertThrows(ReglaDominioException.class, () -> publicar.ejecutar(request));
