@@ -2,7 +2,8 @@ package com.uniquindio.segundaMano.domain.entity;
 
 import com.uniquindio.segundaMano.domain.exception.ReglaDominioException;
 import org.junit.jupiter.api.Test;
-
+import com.uniquindio.segundaMano.domain.valueObject.EncuentroSeguro;
+import com.uniquindio.segundaMano.domain.valueObject.ZonaCampus;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,6 +21,7 @@ class UniCambistaCalificacionTest {
         Oferta oferta = publicacion.recibirOferta(comprador, new BigDecimal("100000"));
         publicacion.aceptarOferta(oferta.getId(), vendedor);
         Transaccion transaccion = Transaccion.iniciar(oferta);
+        transaccion.asignarEncuentroSeguro(comprador, new EncuentroSeguro(ZonaCampus.CAFETERIAS));
         transaccion.confirmar(comprador);
         transaccion.confirmar(vendedor);
         return transaccion;

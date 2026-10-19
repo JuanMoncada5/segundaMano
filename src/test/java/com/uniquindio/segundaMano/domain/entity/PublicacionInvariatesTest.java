@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -84,7 +85,7 @@ class PublicacionInvariantesTest {
     }
 
     @Test
-    void noDebePermitirAceptarUnaSegundaOfertaCuandoYaEstaEnProceso() {
+    void alAceptarUnaOfertaLasDemasQuedanRechazadasYNoSePuedenAceptar() {
         // Arrange
         Oferta primera = publicacion.recibirOferta(comprador, new BigDecimal("100000"));
         Oferta segunda = publicacion.recibirOferta(otro, new BigDecimal("110000"));
@@ -92,7 +93,69 @@ class PublicacionInvariantesTest {
 
         // Act & Assert
         assertThrows(ReglaDominioException.class, () -> publicacion.aceptarOferta(segunda.getId(), vendedor));
-        assertEquals(EstadoOferta.PENDIENTE, segunda.getEstado());
+        assertEquals(EstadoOferta.RECHAZADA, segunda.getEstado());
+        assertEquals(EstadoOferta.ACEPTADA, primera.getEstado());
+    }
+
+    @Test
+    void elDuenoPuedeEditarUnaPublicacionActiva() {
+        // Act
+        publicacion.editar(vendedor, "Calculadora Casio fx-991", new BigDecimal("140000"));
+
+        // Assert
+        assertEquals("Calculadora Casio fx-991", publicacion.getTitulo());
+        assertEquals(new BigDecimal("140000"), publicacion.getValor());
+    }
+
+    @Test
+    void noDebePermitirEditarUnaPublicacionEnProcesoDeCompra() {
+        // Arrange
+        Oferta oferta = publicacion.recibirOferta(comprador, new BigDecimal("100000"));
+        publicacion.aceptarOferta(oferta.getId(), vendedor);
+
+        // Act & Assert
+        assertThrows(ReglaDominioException.class,
+                () -> publicacion.editar(vendedor, "Otro título", new BigDecimal("10000")));
+        assertEquals("Calculadora Casio", publicacion.getTitulo());
+        assertEquals(new BigDecimal("150000"), publicacion.getValor());
+    }
+
+    @Test
+    void soloElDuenoPuedeEditarLaPublicacion() {
+        // Act & Assert
+        assertThrows(ReglaDominioException.class,
+                () -> publicacion.editar(comprador, "Otro título", new BigDecimal("10000")));
+        assertEquals("Calculadora Casio", publicacion.getTitulo());
+    }
+
+    @Test
+    void expiraALos60DiasSinActividadYNoAntes() {
+        // Arrange
+        LocalDate dia59 = publicacion.getFechaUltimaActividad().plusDays(59);
+        LocalDate dia60 = publicacion.getFechaUltimaActividad().plusDays(60);
+
+        // Act & Assert
+        assertFalse(publicacion.expirarSiCorresponde(dia59));
+        assertEquals(EstadoPublicacion.ACTIVA, publicacion.getEstado());
+
+        assertTrue(publicacion.expirarSiCorresponde(dia60));
+        assertEquals(EstadoPublicacion.EXPIRADA, publicacion.getEstado());
+        assertThrows(ReglaDominioException.class,
+                () -> publicacion.recibirOferta(comprador, new BigDecimal("100000")));
+    }
+
+    @Test
+    void unaPublicacionEnProcesoNoExpira() {
+        // Arrange
+        Oferta oferta = publicacion.recibirOferta(comprador, new BigDecimal("100000"));
+        publicacion.aceptarOferta(oferta.getId(), vendedor);
+
+        // Act
+        boolean expiro = publicacion.expirarSiCorresponde(LocalDate.now().plusDays(90));
+
+        // Assert
+        assertFalse(expiro);
+        assertEquals(EstadoPublicacion.EN_PROCESO, publicacion.getEstado());
     }
 
     @Test
@@ -119,4 +182,3 @@ class PublicacionInvariantesTest {
         assertEquals(EstadoPublicacion.ELIMINADA, publicacion.getEstado());
     }
 }
-
