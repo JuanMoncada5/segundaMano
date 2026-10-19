@@ -40,7 +40,7 @@ class FlujoTransaccionCompletoTest {
         assertEquals(EstadoTransaccion.PENDIENTE, transaccion.getEstado());
 
         // 6. Se asigna un EncuentroSeguro
-        transaccion.asignarEncuentroSeguro(new EncuentroSeguro(ZonaCampus.BIBLIOTECA, "Central"));
+        transaccion.asignarEncuentroSeguro(comprador, new EncuentroSeguro(ZonaCampus.BIBLIOTECA, "Central"));
 
         // 7. Ambos confirman -> la Transaccion queda Completada
         transaccion.confirmar(comprador);

@@ -6,6 +6,7 @@ import com.uniquindio.segundaMano.domain.valueObject.EstadoTransaccion;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class UniCambista {
 

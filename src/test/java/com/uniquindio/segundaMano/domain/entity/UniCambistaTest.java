@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UniCambistaTest {
 
@@ -24,5 +25,17 @@ class UniCambistaTest {
         assertThrows(ReglaDominioException.class, () -> {
             UniCambista.registrar("laura@gmail.com", "Laura");
         });
+    }
+
+    @Test
+    void aceptaCorreoDeEstudianteYLoNormaliza() {
+        // Arrange & Act
+        UniCambista estudiante = UniCambista.registrar("  Laura@UQvirtual.edu.co ", "Laura");
+        UniCambista mismo = UniCambista.registrar("laura@uqvirtual.edu.co", "Laura");
+
+        // Assert
+        assertEquals("laura@uqvirtual.edu.co", estudiante.getCorreoInstitucional());
+        assertEquals(estudiante, mismo);
+        assertTrue(!estudiante.puedeCrearPublicacion()); // recién registrado aún no está verificado
     }
 }

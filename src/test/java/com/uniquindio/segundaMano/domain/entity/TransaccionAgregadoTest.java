@@ -39,6 +39,7 @@ class TransaccionAgregadoTest {
         Oferta oferta = publicacion.recibirOferta(comprador, new BigDecimal("100000"));
         publicacion.aceptarOferta(oferta.getId(), vendedor);
         Transaccion transaccion = Transaccion.iniciar(oferta);
+        transaccion.asignarEncuentroSeguro(comprador, new EncuentroSeguro(ZonaCampus.BIBLIOTECA));
 
         // Act
         transaccion.confirmar(comprador);
@@ -105,13 +106,46 @@ class TransaccionAgregadoTest {
         publicacion.aceptarOferta(oferta.getId(), vendedor);
         Transaccion transaccion = Transaccion.iniciar(oferta);
         EncuentroSeguro biblioteca = new EncuentroSeguro(ZonaCampus.BIBLIOTECA);
-        transaccion.asignarEncuentroSeguro(biblioteca);
+        transaccion.asignarEncuentroSeguro(vendedor, biblioteca);
         transaccion.confirmar(comprador);
         transaccion.confirmar(vendedor);
 
         // Act & Assert
         assertThrows(ReglaDominioException.class,
-                () -> transaccion.asignarEncuentroSeguro(new EncuentroSeguro(ZonaCampus.CANCHAS)));
+                () -> transaccion.asignarEncuentroSeguro(comprador, new EncuentroSeguro(ZonaCampus.CANCHAS)));
         assertEquals(biblioteca, transaccion.getEncuentroSeguro());
+    }
+
+    @Test
+    void noDebeConfirmarseSinEncuentroSeguro() {
+        // Arrange
+        UniCambista vendedor = nuevoUniCambista("vendedor@uniquindio.edu.co", "Laura");
+        UniCambista comprador = nuevoUniCambista("comprador@uniquindio.edu.co", "Juan");
+        Publicacion publicacion = Publicacion.publicar(vendedor, "Calculadora Casio", new BigDecimal("150000"));
+        Oferta oferta = publicacion.recibirOferta(comprador, new BigDecimal("100000"));
+        publicacion.aceptarOferta(oferta.getId(), vendedor);
+        Transaccion transaccion = Transaccion.iniciar(oferta);
+
+        // Act & Assert
+        assertThrows(ReglaDominioException.class, () -> transaccion.confirmar(comprador));
+        assertFalse(transaccion.isConfirmadaPorComprador());
+        assertEquals(EstadoTransaccion.PENDIENTE, transaccion.getEstado());
+    }
+
+    @Test
+    void soloElCompradorOElVendedorPuedenAcordarElEncuentroSeguro() {
+        // Arrange
+        UniCambista vendedor = nuevoUniCambista("vendedor@uniquindio.edu.co", "Laura");
+        UniCambista comprador = nuevoUniCambista("comprador@uniquindio.edu.co", "Juan");
+        UniCambista tercero = nuevoUniCambista("tercero@uniquindio.edu.co", "Pedro");
+        Publicacion publicacion = Publicacion.publicar(vendedor, "Calculadora Casio", new BigDecimal("150000"));
+        Oferta oferta = publicacion.recibirOferta(comprador, new BigDecimal("100000"));
+        publicacion.aceptarOferta(oferta.getId(), vendedor);
+        Transaccion transaccion = Transaccion.iniciar(oferta);
+
+        // Act & Assert
+        assertThrows(ReglaDominioException.class,
+                () -> transaccion.asignarEncuentroSeguro(tercero, new EncuentroSeguro(ZonaCampus.CANCHAS)));
+        assertNull(transaccion.getEncuentroSeguro());
     }
 }

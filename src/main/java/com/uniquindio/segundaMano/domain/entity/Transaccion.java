@@ -47,7 +47,14 @@ public class Transaccion {
         );
     }
 
-    public void asignarEncuentroSeguro(EncuentroSeguro encuentroSeguro) {
+    /**
+     * Solo el comprador o el vendedor coordinan dónde se entregan el artículo.
+     * El EncuentroSeguro puede cambiarse mientras la Transacción siga PENDIENTE.
+     */
+    public void asignarEncuentroSeguro(UniCambista quienAsigna, EncuentroSeguro encuentroSeguro) {
+        if (!esParticipante(quienAsigna)) {
+            throw new ReglaDominioException("Solo el comprador o el vendedor pueden acordar el EncuentroSeguro");
+        }
         if (encuentroSeguro == null) {
             throw new ReglaDominioException("El EncuentroSeguro es obligatorio");
         }
@@ -64,16 +71,25 @@ public class Transaccion {
         if (estado == EstadoTransaccion.COMPLETADA) {
             throw new ReglaDominioException("La Transacción ya está Completada");
         }
+        if (!esParticipante(quienConfirma)) {
+            throw new ReglaDominioException("Solo el comprador o el vendedor de esta Transacción pueden confirmarla");
+        }
+        // Invariante 6: el EncuentroSeguro es obligatorio; sin él no hay entrega que confirmar
+        if (encuentroSeguro == null) {
+            throw new ReglaDominioException("Debe acordarse un EncuentroSeguro antes de confirmar la Transacción");
+        }
         if (quienConfirma.equals(comprador)) {
             this.confirmadaPorComprador = true;
-        } else if (quienConfirma.equals(vendedor)) {
-            this.confirmadaPorVendedor = true;
         } else {
-            throw new ReglaDominioException("Solo el comprador o el vendedor de esta Transacción pueden confirmarla");
+            this.confirmadaPorVendedor = true;
         }
         if (confirmadaPorComprador && confirmadaPorVendedor) {
             this.estado = EstadoTransaccion.COMPLETADA;
         }
+    }
+
+    private boolean esParticipante(UniCambista uniCambista) {
+        return uniCambista != null && (uniCambista.equals(comprador) || uniCambista.equals(vendedor));
     }
 
     /**
@@ -121,6 +137,14 @@ public class Transaccion {
 
     public EstadoTransaccion getEstado() {
         return estado;
+    }
+
+    public boolean isConfirmadaPorComprador() {
+        return confirmadaPorComprador;
+    }
+
+    public boolean isConfirmadaPorVendedor() {
+        return confirmadaPorVendedor;
     }
 
     @Override

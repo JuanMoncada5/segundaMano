@@ -1,24 +1,32 @@
 package com.uniquindio.segundaMano.application.usecase;
 
+import com.uniquindio.segundaMano.application.dto.OfertaResponse;
+import com.uniquindio.segundaMano.application.dto.OfertarArticuloRequest;
 import com.uniquindio.segundaMano.domain.entity.Oferta;
 import com.uniquindio.segundaMano.domain.entity.Publicacion;
 import com.uniquindio.segundaMano.domain.entity.UniCambista;
 import com.uniquindio.segundaMano.domain.exception.ReglaDominioException;
 import com.uniquindio.segundaMano.domain.repository.PublicacionRepository;
-
-import java.math.BigDecimal;
+import com.uniquindio.segundaMano.domain.repository.UniCambistaRepository;
 
 public class OfertarArticuloUseCase {
-    private final PublicacionRepository publicacionRepository;
 
-    public OfertarArticuloUseCase(PublicacionRepository publicacionRepository) {
+    private final PublicacionRepository publicacionRepository;
+    private final UniCambistaRepository uniCambistaRepository;
+
+    public OfertarArticuloUseCase(PublicacionRepository publicacionRepository,
+                                  UniCambistaRepository uniCambistaRepository) {
         this.publicacionRepository = publicacionRepository;
+        this.uniCambistaRepository = uniCambistaRepository;
     }
 
-    public Oferta ejecutar(String codigoPublicacion, UniCambista oferente, BigDecimal monto) {
-        Publicacion publicacion = publicacionRepository.buscarPorCodigo(codigoPublicacion).orElseThrow(() -> new ReglaDominioException("La Publicación no existe"));
-        Oferta oferta = publicacion.recibirOferta(oferente, monto);
+    public OfertaResponse ejecutar(OfertarArticuloRequest request) {
+        Publicacion publicacion = publicacionRepository.buscarPorCodigo(request.codigoPublicacion())
+                .orElseThrow(() -> new ReglaDominioException("La Publicación no existe"));
+        UniCambista oferente = uniCambistaRepository.buscarPorCorreo(request.correoOferente())
+                .orElseThrow(() -> new ReglaDominioException("El UniCambista no está registrado"));
+        Oferta oferta = publicacion.recibirOferta(oferente, request.montoPropuesto());
         publicacionRepository.guardar(publicacion);
-        return oferta;
+        return OfertaResponse.desde(oferta);
     }
 }
