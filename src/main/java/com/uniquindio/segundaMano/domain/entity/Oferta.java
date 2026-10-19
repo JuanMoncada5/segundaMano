@@ -87,6 +87,14 @@ public class Oferta {
         this.estado = EstadoOferta.ACEPTADA;
     }
 
+    /**
+     * Lo invoca Publicacion al aceptar otra Oferta: esta deja de estar abierta y queda RECHAZADA.
+     * No valida dueño porque la decisión ya la tomó el dueño al aceptar la otra Oferta.
+     */
+    void descartar() {
+        this.estado = EstadoOferta.RECHAZADA;
+    }
+
     /** Lo invoca Transaccion.iniciar: una Oferta aceptada solo puede originar una Transacción. */
     void vincularTransaccion() {
         if (this.transaccionIniciada) {

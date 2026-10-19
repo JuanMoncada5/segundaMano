@@ -4,6 +4,7 @@ import com.uniquindio.segundaMano.domain.exception.ReglaDominioException;
 import com.uniquindio.segundaMano.domain.valueObject.RachaConfianza;
 import com.uniquindio.segundaMano.domain.valueObject.EstadoTransaccion;
 
+import java.util.List;
 import java.util.Objects;
 
 public class UniCambista {
@@ -12,6 +13,7 @@ public class UniCambista {
     private String nombre;
     private boolean verificado;
     private RachaConfianza rachaConfianza;
+    private static final List<String> DOMINIOS_INSTITUCIONALES = List.of("@uqvirtual.edu.co", "@uniquindio.edu.co");
 
     private UniCambista(String correoInstitucional, String nombre) {
         this.correoInstitucional = correoInstitucional;
@@ -21,10 +23,23 @@ public class UniCambista {
     }
 
     public static UniCambista registrar(String correoInstitucional, String nombre) {
-        if (correoInstitucional == null || !correoInstitucional.endsWith("@uniquindio.edu.co")) {
+        if (correoInstitucional == null) {
             throw new ReglaDominioException("El correo debe ser institucional");
         }
-        return new UniCambista(correoInstitucional, nombre);
+        String correo = normalizarCorreo(correoInstitucional);
+        boolean esInstitucional = DOMINIOS_INSTITUCIONALES.stream().anyMatch(correo::endsWith);
+        if (!esInstitucional) {
+            throw new ReglaDominioException("El correo debe ser institucional");
+        }
+        if (nombre == null || nombre.isBlank()) {
+            throw new ReglaDominioException("El UniCambista debe tener un nombre");
+        }
+        return new UniCambista(correo, nombre.trim());
+    }
+
+    /** "  Laura@UQvirtual.edu.co " y "laura@uqvirtual.edu.co" son el mismo UniCambista. */
+    public static String normalizarCorreo(String correo) {
+        return correo.trim().toLowerCase();
     }
 
     public void verificarCorreo() {
