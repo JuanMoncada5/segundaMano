@@ -32,6 +32,21 @@ public class Oferta {
         this.estado = EstadoOferta.PENDIENTE;
         this.transaccionIniciada = false;
     }
+    private Oferta(String id, Publicacion publicacion, UniCambista oferente, BigDecimal montoPropuesto,
+                   EstadoOferta estado, boolean transaccionIniciada) {
+        this.id = id;
+        this.publicacion = publicacion;
+        this.oferente = oferente;
+        this.montoPropuesto = montoPropuesto;
+        this.estado = estado;
+        this.transaccionIniciada = transaccionIniciada;
+    }
+
+    /** Solo la usa Publicacion.reconstruir: una Oferta sigue sin poder crearse desde fuera del Agregado. */
+    static Oferta reconstruir(String id, Publicacion publicacion, UniCambista oferente, BigDecimal montoPropuesto,
+                              EstadoOferta estado, boolean transaccionIniciada) {
+        return new Oferta(id, publicacion, oferente, montoPropuesto, estado, transaccionIniciada);
+    }
 
     static Oferta crear(Publicacion publicacion, UniCambista oferente, BigDecimal montoPropuesto) {
         if (oferente == null) {

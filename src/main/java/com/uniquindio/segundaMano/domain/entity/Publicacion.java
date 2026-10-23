@@ -37,6 +37,38 @@ public class Publicacion {
         this.fechaUltimaActividad = LocalDate.now();
     }
 
+    /** Datos guardados de una Oferta, para que el repositorio pueda reconstruir el Agregado completo. */
+    public record DatosOferta(String id, UniCambista oferente, BigDecimal montoPropuesto,
+                              EstadoOferta estado, boolean transaccionIniciada) {
+    }
+
+    /**
+     * Solo para los repositorios: reconstruye una Publicación (con sus Ofertas) que ya estaba guardada.
+     * No vuelve a aplicar las reglas de negocio porque esos datos ya fueron validados al crearlos.
+     */
+    public static Publicacion reconstruir(String codigo, UniCambista dueno, String titulo, BigDecimal valor,
+                                          EstadoPublicacion estado, VigenciaAcademica vigenciaAcademica,
+                                          LocalDate fechaUltimaActividad, List<DatosOferta> ofertas) {
+        Publicacion publicacion = new Publicacion(codigo, dueno, titulo, valor, estado,
+                vigenciaAcademica, fechaUltimaActividad);
+        for (DatosOferta datos : ofertas) {
+            publicacion.ofertas.add(Oferta.reconstruir(datos.id(), publicacion, datos.oferente(),
+                    datos.montoPropuesto(), datos.estado(), datos.transaccionIniciada()));
+        }
+        return publicacion;
+    }
+
+    private Publicacion(String codigo, UniCambista dueno, String titulo, BigDecimal valor, EstadoPublicacion estado,
+                        VigenciaAcademica vigenciaAcademica, LocalDate fechaUltimaActividad) {
+        this.codigo = codigo;
+        this.dueno = dueno;
+        this.titulo = titulo;
+        this.valor = valor;
+        this.estado = estado;
+        this.vigenciaAcademica = vigenciaAcademica;
+        this.fechaUltimaActividad = fechaUltimaActividad;
+    }
+
     public static Publicacion publicar(UniCambista dueno, String titulo, BigDecimal valor) {
         if (dueno == null) {
             throw new ReglaDominioException("La Publicación debe tener un dueño");

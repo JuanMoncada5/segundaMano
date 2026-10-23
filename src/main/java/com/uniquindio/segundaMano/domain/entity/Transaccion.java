@@ -34,6 +34,37 @@ public class Transaccion {
         this.estado = EstadoTransaccion.PENDIENTE;
     }
 
+    private Transaccion(String id, Publicacion publicacion, UniCambista comprador, UniCambista vendedor,
+                        BigDecimal montoAcordado, EncuentroSeguro encuentroSeguro, boolean confirmadaPorComprador,
+                        boolean confirmadaPorVendedor, EstadoTransaccion estado,
+                        boolean calificadaPorComprador, boolean calificadaPorVendedor) {
+        this.id = id;
+        this.publicacion = publicacion;
+        this.comprador = comprador;
+        this.vendedor = vendedor;
+        this.montoAcordado = montoAcordado;
+        this.encuentroSeguro = encuentroSeguro;
+        this.confirmadaPorComprador = confirmadaPorComprador;
+        this.confirmadaPorVendedor = confirmadaPorVendedor;
+        this.estado = estado;
+        this.calificadaPorComprador = calificadaPorComprador;
+        this.calificadaPorVendedor = calificadaPorVendedor;
+    }
+
+    /**
+     * Solo para los repositorios: reconstruye una Transacción que ya estaba guardada.
+     * No vuelve a aplicar las reglas de negocio porque esos datos ya fueron validados al crearlos.
+     */
+    public static Transaccion reconstruir(String id, Publicacion publicacion, UniCambista comprador,
+                                          UniCambista vendedor, BigDecimal montoAcordado,
+                                          EncuentroSeguro encuentroSeguro, boolean confirmadaPorComprador,
+                                          boolean confirmadaPorVendedor, EstadoTransaccion estado,
+                                          boolean calificadaPorComprador, boolean calificadaPorVendedor) {
+        return new Transaccion(id, publicacion, comprador, vendedor, montoAcordado, encuentroSeguro,
+                confirmadaPorComprador, confirmadaPorVendedor, estado,
+                calificadaPorComprador, calificadaPorVendedor);
+    }
+
     public static Transaccion iniciar(Oferta ofertaAceptada) {
         if (ofertaAceptada == null || ofertaAceptada.getEstado() != EstadoOferta.ACEPTADA) {
             throw new ReglaDominioException("Solo se puede iniciar una Transacción a partir de una Oferta aceptada");
@@ -146,6 +177,10 @@ public class Transaccion {
     public boolean isConfirmadaPorVendedor() {
         return confirmadaPorVendedor;
     }
+
+    public boolean isCalificadaPorComprador() { return calificadaPorComprador;}
+
+    public boolean isCalificadaPorVendedor() { return calificadaPorVendedor;}
 
     @Override
     public boolean equals(Object o) {

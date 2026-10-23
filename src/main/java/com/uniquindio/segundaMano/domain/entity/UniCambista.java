@@ -23,6 +23,18 @@ public class UniCambista {
         this.rachaConfianza = RachaConfianza.inicial();
     }
 
+    /**
+     * Solo para los repositorios: reconstruye un UniCambista que ya estaba guardado.
+     * No vuelve a aplicar las reglas de registro porque esos datos ya fueron validados al crearlos.
+     */
+    public static UniCambista reconstruir(String correoInstitucional, String nombre,
+                                          boolean verificado, RachaConfianza rachaConfianza) {
+        UniCambista uniCambista = new UniCambista(correoInstitucional, nombre);
+        uniCambista.verificado = verificado;
+        uniCambista.rachaConfianza = rachaConfianza;
+        return uniCambista;
+    }
+
     public static UniCambista registrar(String correoInstitucional, String nombre) {
         if (correoInstitucional == null) {
             throw new ReglaDominioException("El correo debe ser institucional");
