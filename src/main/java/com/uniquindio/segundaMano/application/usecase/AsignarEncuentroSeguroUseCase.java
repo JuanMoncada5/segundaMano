@@ -4,7 +4,7 @@ import com.uniquindio.segundaMano.application.dto.AsignarEncuentroSeguroRequest;
 import com.uniquindio.segundaMano.application.dto.TransaccionResponse;
 import com.uniquindio.segundaMano.domain.entity.Transaccion;
 import com.uniquindio.segundaMano.domain.entity.UniCambista;
-import com.uniquindio.segundaMano.domain.exception.ReglaDominioException;
+import com.uniquindio.segundaMano.domain.exception.RecursoNoEncontradoException;
 import com.uniquindio.segundaMano.domain.repository.TransaccionRepository;
 import com.uniquindio.segundaMano.domain.repository.UniCambistaRepository;
 import com.uniquindio.segundaMano.domain.valueObject.EncuentroSeguro;
@@ -23,9 +23,9 @@ public class AsignarEncuentroSeguroUseCase {
 
     public TransaccionResponse ejecutar(AsignarEncuentroSeguroRequest request) {
         Transaccion transaccion = transaccionRepository.buscarPorId(request.idTransaccion())
-                .orElseThrow(() -> new ReglaDominioException("La Transacción no existe"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("La Transacción no existe"));
         UniCambista quienAsigna = uniCambistaRepository.buscarPorCorreo(request.correoUniCambista())
-                .orElseThrow(() -> new ReglaDominioException("El UniCambista no está registrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("El UniCambista no está registrado"));
         EncuentroSeguro encuentro = new EncuentroSeguro(ZonaCampus.desde(request.zona()), request.referencia());
 
         transaccion.asignarEncuentroSeguro(quienAsigna, encuentro);

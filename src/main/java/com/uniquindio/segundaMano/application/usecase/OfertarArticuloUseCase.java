@@ -5,7 +5,7 @@ import com.uniquindio.segundaMano.application.dto.OfertarArticuloRequest;
 import com.uniquindio.segundaMano.domain.entity.Oferta;
 import com.uniquindio.segundaMano.domain.entity.Publicacion;
 import com.uniquindio.segundaMano.domain.entity.UniCambista;
-import com.uniquindio.segundaMano.domain.exception.ReglaDominioException;
+import com.uniquindio.segundaMano.domain.exception.RecursoNoEncontradoException;
 import com.uniquindio.segundaMano.domain.repository.PublicacionRepository;
 import com.uniquindio.segundaMano.domain.repository.UniCambistaRepository;
 
@@ -22,9 +22,9 @@ public class OfertarArticuloUseCase {
 
     public OfertaResponse ejecutar(OfertarArticuloRequest request) {
         Publicacion publicacion = publicacionRepository.buscarPorCodigo(request.codigoPublicacion())
-                .orElseThrow(() -> new ReglaDominioException("La Publicación no existe"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("La Publicación no existe"));
         UniCambista oferente = uniCambistaRepository.buscarPorCorreo(request.correoOferente())
-                .orElseThrow(() -> new ReglaDominioException("El UniCambista no está registrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("El UniCambista no está registrado"));
         Oferta oferta = publicacion.recibirOferta(oferente, request.montoPropuesto());
         publicacionRepository.guardar(publicacion);
         return OfertaResponse.desde(oferta);
