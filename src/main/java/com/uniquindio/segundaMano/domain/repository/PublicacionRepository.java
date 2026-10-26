@@ -12,4 +12,6 @@ public interface PublicacionRepository {
     void guardar(Publicacion publicacion);
 
     List<Publicacion> listarActivas();
+
+    List<Publicacion> listarMasOfertadas(int limite);
 }

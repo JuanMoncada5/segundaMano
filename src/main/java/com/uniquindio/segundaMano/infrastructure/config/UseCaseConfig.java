@@ -16,6 +16,8 @@ import com.uniquindio.segundaMano.domain.repository.TransaccionRepository;
 import com.uniquindio.segundaMano.domain.repository.UniCambistaRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import com.uniquindio.segundaMano.application.usecase.ConsultarPublicacionUseCase;
+import com.uniquindio.segundaMano.application.usecase.ConsultarUniCambistaUseCase;
 
 /**
  * Registra los casos de uso como beans de Spring.
@@ -85,5 +87,14 @@ public class UseCaseConfig {
     public ListarTransaccionesDeUniCambistaUseCase listarTransaccionesDeUniCambistaUseCase(
             TransaccionRepository transacciones, UniCambistaRepository uniCambistas) {
         return new ListarTransaccionesDeUniCambistaUseCase(transacciones, uniCambistas);
+    }
+    @Bean
+    public ConsultarPublicacionUseCase consultarPublicacionUseCase(PublicacionRepository publicaciones) {
+        return new ConsultarPublicacionUseCase(publicaciones);
+    }
+
+    @Bean
+    public ConsultarUniCambistaUseCase consultarUniCambistaUseCase(UniCambistaRepository uniCambistas) {
+        return new ConsultarUniCambistaUseCase(uniCambistas);
     }
 }
