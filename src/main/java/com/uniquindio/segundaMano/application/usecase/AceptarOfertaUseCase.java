@@ -6,6 +6,7 @@ import com.uniquindio.segundaMano.domain.entity.Oferta;
 import com.uniquindio.segundaMano.domain.entity.Publicacion;
 import com.uniquindio.segundaMano.domain.entity.Transaccion;
 import com.uniquindio.segundaMano.domain.entity.UniCambista;
+import com.uniquindio.segundaMano.domain.exception.RecursoNoEncontradoException;
 import com.uniquindio.segundaMano.domain.exception.ReglaDominioException;
 import com.uniquindio.segundaMano.domain.repository.PublicacionRepository;
 import com.uniquindio.segundaMano.domain.repository.TransaccionRepository;
@@ -27,9 +28,9 @@ public class AceptarOfertaUseCase {
 
     public TransaccionResponse ejecutar(AceptarOfertaRequest request) {
         Publicacion publicacion = publicacionRepository.buscarPorCodigo(request.codigoPublicacion())
-                .orElseThrow(() -> new ReglaDominioException("La Publicación no existe"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("La Publicación no existe"));
         UniCambista dueno = uniCambistaRepository.buscarPorCorreo(request.correoDueno())
-                .orElseThrow(() -> new ReglaDominioException("El UniCambista no está registrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("El UniCambista no está registrado"));
 
         publicacion.aceptarOferta(request.idOferta(), dueno);
         Oferta ofertaAceptada = publicacion.getOfertas().stream()

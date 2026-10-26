@@ -4,6 +4,7 @@ import com.uniquindio.segundaMano.domain.entity.Publicacion;
 import com.uniquindio.segundaMano.domain.repository.PublicacionRepository;
 import com.uniquindio.segundaMano.domain.valueObject.EstadoPublicacion;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,16 @@ public class PublicacionRepositoryEnMemoria implements PublicacionRepository {
     public List<Publicacion> listarActivas() {
         return almacen.values().stream()
                 .filter(p -> p.getEstado() == EstadoPublicacion.ACTIVA)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Publicacion> listarMasOfertadas(int limite) {
+        return almacen.values().stream()
+                .filter(p -> p.getEstado() == EstadoPublicacion.ACTIVA && !p.getOfertas().isEmpty())
+                .sorted(Comparator.comparingInt((Publicacion p) -> p.getOfertas().size()).reversed()
+                        .thenComparing(Publicacion::getCodigo))
+                .limit(limite)
                 .collect(Collectors.toList());
     }
 }

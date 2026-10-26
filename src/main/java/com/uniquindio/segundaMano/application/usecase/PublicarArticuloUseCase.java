@@ -4,6 +4,7 @@ import com.uniquindio.segundaMano.application.dto.PublicacionResponse;
 import com.uniquindio.segundaMano.application.dto.PublicarArticuloRequest;
 import com.uniquindio.segundaMano.domain.entity.Publicacion;
 import com.uniquindio.segundaMano.domain.entity.UniCambista;
+import com.uniquindio.segundaMano.domain.exception.RecursoNoEncontradoException;
 import com.uniquindio.segundaMano.domain.exception.ReglaDominioException;
 import com.uniquindio.segundaMano.domain.repository.PublicacionRepository;
 import com.uniquindio.segundaMano.domain.repository.UniCambistaRepository;
@@ -22,7 +23,7 @@ public class PublicarArticuloUseCase {
 
     public PublicacionResponse ejecutar(PublicarArticuloRequest request) {
         UniCambista dueno = uniCambistaRepository.buscarPorCorreo(request.correoDueno())
-                .orElseThrow(() -> new ReglaDominioException("El UniCambista no está registrado"));
+                .orElseThrow(() -> new RecursoNoEncontradoException("El UniCambista no está registrado"));
         Publicacion publicacion = Publicacion.publicar(dueno, request.titulo(), request.valor());
         if (request.tieneVigenciaAcademica()) {
             publicacion.asociarVigenciaAcademica(new VigenciaAcademica(request.curso(), request.semestre()));
