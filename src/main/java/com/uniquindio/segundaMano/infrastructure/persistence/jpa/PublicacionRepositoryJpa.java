@@ -9,6 +9,7 @@ import com.uniquindio.segundaMano.infrastructure.persistence.jpa.entity.Publicac
 import com.uniquindio.segundaMano.infrastructure.persistence.jpa.mapper.PublicacionPersistenceMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,6 +48,15 @@ public class PublicacionRepositoryJpa implements PublicacionRepository {
     @Override
     public List<Publicacion> listarActivas() {
         return publicacionJpa.findByEstado(EstadoPublicacion.ACTIVA).stream()
+                .map(this::aDominio)
+                .toList();
+    }
+
+    @Override
+    public List<Publicacion> listarMasOfertadas(int limite) {
+        return publicacionJpa.rankingCodigosPorCantidadDeOfertas(EstadoPublicacion.ACTIVA, PageRequest.of(0, limite))
+                .stream()
+                .map(codigo -> publicacionJpa.findById(codigo).orElseThrow())
                 .map(this::aDominio)
                 .toList();
     }
