@@ -143,12 +143,13 @@ class ApiRestFlujoTest {
     }
 
     @Test
-    void elManejadorConvierteLaReglaDeDominioEnUn400() {
-        ErrorApi error = new ManejadorGlobalDeExcepciones()
+    void elManejadorConvierteLaReglaDeDominioEnUn422() {
+        ResponseEntity<ErrorApi> respuesta = new ManejadorGlobalDeExcepciones()
                 .manejarReglaDominio(new ReglaDominioException("El correo debe ser institucional"));
 
-        assertEquals(400, error.estado());
-        assertEquals("El correo debe ser institucional", error.mensaje());
+        assertEquals(422, respuesta.getStatusCode().value());
+        assertEquals(422, respuesta.getBody().estado());
+        assertEquals("El correo debe ser institucional", respuesta.getBody().mensaje());
     }
 
     @Test
