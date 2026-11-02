@@ -23,8 +23,6 @@ import com.uniquindio.segundaMano.domain.repository.UniCambistaRepository;
 import com.uniquindio.segundaMano.infrastructure.persistence.PublicacionRepositoryEnMemoria;
 import com.uniquindio.segundaMano.infrastructure.persistence.TransaccionRepositoryEnMemoria;
 import com.uniquindio.segundaMano.infrastructure.persistence.UniCambistaRepositoryEnMemoria;
-import com.uniquindio.segundaMano.infrastructure.rest.dto.AceptarOfertaBody;
-import com.uniquindio.segundaMano.infrastructure.rest.dto.ConfirmacionBody;
 import com.uniquindio.segundaMano.infrastructure.rest.dto.EncuentroSeguroBody;
 import com.uniquindio.segundaMano.infrastructure.rest.dto.OfertarArticuloBody;
 import com.uniquindio.segundaMano.infrastructure.rest.dto.PublicarArticuloBody;
@@ -43,6 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
+import java.security.Principal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,6 +53,10 @@ class ApiRestFlujoTest {
 
     private static final String VENDEDOR = "vendedor@uniquindio.edu.co";
     private static final String COMPRADOR = "comprador@uqvirtual.edu.co";
+
+    /** Simula al usuario autenticado: en producción Spring pone aquí el JWT cuyo "sub" es el correo. */
+    private static final Principal COMO_VENDEDOR = () -> VENDEDOR;
+    private static final Principal COMO_COMPRADOR = () -> COMPRADOR;
 
     private UniCambistaController uniCambistaController;
     private PublicacionController publicacionController;
@@ -101,17 +104,20 @@ class ApiRestFlujoTest {
 
         // Act
         PublicacionResponse publicacion = publicacionController.publicar(
-                new PublicarArticuloBody(VENDEDOR, "Calculadora Casio", new BigDecimal("150000"), null, null)).getBody();
+                new PublicarArticuloBody("Calculadora Casio", new BigDecimal("150000"), null, null),
+                COMO_VENDEDOR).getBody();
         OfertaResponse oferta = publicacionController.ofertar(publicacion.codigo(),
-                new OfertarArticuloBody(COMPRADOR, new BigDecimal("100000"))).getBody();
+                new OfertarArticuloBody(new BigDecimal("100000")), COMO_COMPRADOR).getBody();
         TransaccionResponse iniciada = publicacionController.aceptarOferta(
-                publicacion.codigo(), oferta.id(), new AceptarOfertaBody(VENDEDOR)).getBody();
+                publicacion.codigo(), oferta.id(), COMO_VENDEDOR).getBody();
         transaccionController.asignarEncuentroSeguro(iniciada.id(),
-                new EncuentroSeguroBody(COMPRADOR, "biblioteca", "Central"));
-        transaccionController.confirmar(iniciada.id(), new ConfirmacionBody(COMPRADOR));
-        TransaccionResponse completada = transaccionController.confirmar(iniciada.id(), new ConfirmacionBody(VENDEDOR));
+                new EncuentroSeguroBody("biblioteca", "Central"), COMO_COMPRADOR);
+        transaccionController.confirmar(iniciada.id(), COMO_COMPRADOR);
+        TransaccionResponse completada = transaccionController.confirmar(iniciada.id(), COMO_VENDEDOR);
 
         // Assert
+        assertEquals(VENDEDOR, publicacion.correoDueno()); // el dueño salió del "token", no del cuerpo
+        assertEquals(COMPRADOR, oferta.correoOferente());
         assertEquals("COMPLETADA", completada.estado());
         assertEquals("BIBLIOTECA", completada.zonaEncuentro());
         assertTrue(consultaPublicaciones.listarActivas().isEmpty());
@@ -126,7 +132,7 @@ class ApiRestFlujoTest {
 
         // Act
         ResponseEntity<PublicacionResponse> respuesta = publicacionController.publicar(
-                new PublicarArticuloBody(VENDEDOR, "Libro de Cálculo", new BigDecimal("50000"), "Cálculo I", "2026-2"));
+                new PublicarArticuloBody("Libro de Cálculo", new BigDecimal("50000"), "Cálculo I", "2026-2"), COMO_VENDEDOR);
         PublicacionResponse publicacion = respuesta.getBody();
 
         // Assert

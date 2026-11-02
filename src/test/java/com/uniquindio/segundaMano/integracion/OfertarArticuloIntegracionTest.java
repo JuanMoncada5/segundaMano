@@ -38,9 +38,11 @@ class OfertarArticuloIntegracionTest {
     void deberiaOfertarPorUnArticuloYQuedarGuardadaEnLaBaseDeDatos() throws Exception {
         // Arrange: en data.sql PUB-004 (silla de Ana, 60.000) no tiene ofertas
         String cuerpo = """
-                { "correoOferente": "luis@uqvirtual.edu.co", "montoPropuesto": 45000 }
+                { "montoPropuesto": 45000 }
                 """;
-        var luis = jwt().authorities(new SimpleGrantedAuthority("UNICAMBISTA"));
+        // el correo del oferente ya NO va en el cuerpo: sale del "sub" del token
+        var luis = jwt().jwt(token -> token.subject("luis@uqvirtual.edu.co"))
+                .authorities(new SimpleGrantedAuthority("UNICAMBISTA"));
 
         // Act
         mockMvc.perform(post("/api/publicaciones/PUB-004/ofertas")
