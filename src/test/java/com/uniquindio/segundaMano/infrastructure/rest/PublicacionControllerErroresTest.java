@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -34,6 +35,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * que el repositorio nunca llegó a guardar nada.
  * @WebMvcTest no carga clases @Component como el mapper, por eso se trae con @Import.
  * addFilters = false apaga la seguridad: aquí solo importa el controller (la seguridad va en el punto 1).
+ * Como sin filtros no hay JWT, el usuario autenticado se simula con .principal(...): el controller
+ * solo lee Principal.getName(), que en producción es el "sub" del token.
  */
 @WebMvcTest(PublicacionController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -59,9 +62,10 @@ class PublicacionControllerErroresTest {
 
         // Act & Assert
         mockMvc.perform(post("/api/publicaciones/NO-EXISTE/ofertas")
+                        .principal(new TestingAuthenticationToken("luis@uqvirtual.edu.co", null))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                { "correoOferente": "luis@uqvirtual.edu.co", "montoPropuesto": 50000 }
+                                { "montoPropuesto": 50000 }
                                 """))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.estado").value(404));
@@ -82,9 +86,10 @@ class PublicacionControllerErroresTest {
 
         // Act & Assert: 50.000 es el 33% del precio, la regla exige mínimo el 50%
         mockMvc.perform(post("/api/publicaciones/PUB-001/ofertas")
+                        .principal(new TestingAuthenticationToken("luis@uqvirtual.edu.co", null))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                { "correoOferente": "luis@uqvirtual.edu.co", "montoPropuesto": 50000 }
+                                { "montoPropuesto": 50000 }
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.estado").value(400))
