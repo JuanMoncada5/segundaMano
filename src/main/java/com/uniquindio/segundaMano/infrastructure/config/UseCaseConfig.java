@@ -90,4 +90,10 @@ public class UseCaseConfig {
     public ConsultarRankingPublicacionesUseCase consultarRankingPublicacionesUseCase(PublicacionRepository publicaciones) {
         return new ConsultarRankingPublicacionesUseCase(publicaciones);
     }
+
+    @Bean
+    public EliminarPublicacionUseCase eliminarPublicacionUseCase(PublicacionRepository publicaciones,
+                                                                 UniCambistaRepository uniCambistas) {
+        return new EliminarPublicacionUseCase(publicaciones, uniCambistas);
+    }
 }
