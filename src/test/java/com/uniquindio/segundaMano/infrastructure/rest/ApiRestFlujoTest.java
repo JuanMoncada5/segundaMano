@@ -1,5 +1,6 @@
 package com.uniquindio.segundaMano.infrastructure.rest;
 
+import com.uniquindio.segundaMano.application.auth.RegistrarCuentaUseCase;
 import com.uniquindio.segundaMano.application.dto.OfertaResponse;
 import com.uniquindio.segundaMano.application.dto.PublicacionResponse;
 import com.uniquindio.segundaMano.application.dto.TransaccionResponse;
@@ -8,7 +9,6 @@ import com.uniquindio.segundaMano.application.usecase.AsignarEncuentroSeguroUseC
 import com.uniquindio.segundaMano.application.usecase.ConfirmarTransaccionUseCase;
 import com.uniquindio.segundaMano.application.usecase.ConsultarPublicacionUseCase;
 import com.uniquindio.segundaMano.application.usecase.ConsultarTransaccionUseCase;
-import com.uniquindio.segundaMano.application.usecase.ConsultarUniCambistaUseCase;
 import com.uniquindio.segundaMano.application.usecase.ListarPublicacionesActivasUseCase;
 import com.uniquindio.segundaMano.application.usecase.ListarTransaccionesDeUniCambistaUseCase;
 import com.uniquindio.segundaMano.application.usecase.OfertarArticuloUseCase;
@@ -35,6 +35,8 @@ import com.uniquindio.segundaMano.infrastructure.rest.exception.ManejadorGlobalD
 import com.uniquindio.segundaMano.infrastructure.rest.mapper.PublicacionRestMapper;
 import com.uniquindio.segundaMano.infrastructure.rest.mapper.TransaccionRestMapper;
 import com.uniquindio.segundaMano.infrastructure.rest.mapper.UniCambistaRestMapper;
+import com.uniquindio.segundaMano.support.CodificadorFalso;
+import com.uniquindio.segundaMano.support.CredencialRepositoryEnMemoria;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -66,7 +68,9 @@ class ApiRestFlujoTest {
         UniCambistaRepository uniCambistas = new UniCambistaRepositoryEnMemoria();
 
         uniCambistaController = new UniCambistaController(
-                new RegistrarUniCambistaUseCase(uniCambistas), new VerificarCorreoUseCase(uniCambistas),
+                new RegistrarCuentaUseCase(new RegistrarUniCambistaUseCase(uniCambistas),
+                        new CredencialRepositoryEnMemoria(), new CodificadorFalso()),
+                new VerificarCorreoUseCase(uniCambistas),
                 new UniCambistaRestMapper());
         publicacionController = new PublicacionController(
                 new PublicarArticuloUseCase(publicaciones, uniCambistas),
@@ -85,7 +89,7 @@ class ApiRestFlujoTest {
     }
 
     private void registrarYVerificar(String correo, String nombre) {
-        uniCambistaController.registrar(new RegistrarUniCambistaBody(correo, nombre));
+        uniCambistaController.registrar(new RegistrarUniCambistaBody(correo, nombre, "Clave123*"));
         uniCambistaController.verificarCorreo(new VerificarCorreoBody(correo));
     }
 
@@ -167,6 +171,6 @@ class ApiRestFlujoTest {
     @Test
     void unaReglaRotaSaleComoReglaDominioExceptionParaQueElManejadorLaAtienda() {
         assertThrows(ReglaDominioException.class,
-                () -> uniCambistaController.registrar(new RegistrarUniCambistaBody("laura@gmail.com", "Laura")));
+                () -> uniCambistaController.registrar(new RegistrarUniCambistaBody("laura@gmail.com", "Laura", "Clave123*")));
     }
 }

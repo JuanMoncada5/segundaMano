@@ -1,7 +1,7 @@
 package com.uniquindio.segundaMano.infrastructure.rest;
 
 import com.uniquindio.segundaMano.application.dto.UniCambistaResponse;
-import com.uniquindio.segundaMano.application.usecase.RegistrarUniCambistaUseCase;
+import com.uniquindio.segundaMano.application.auth.RegistrarCuentaUseCase;
 import com.uniquindio.segundaMano.application.usecase.VerificarCorreoUseCase;
 import com.uniquindio.segundaMano.infrastructure.rest.dto.RegistrarUniCambistaBody;
 import com.uniquindio.segundaMano.infrastructure.rest.dto.VerificarCorreoBody;
@@ -20,14 +20,14 @@ import java.net.URI;
 @RequestMapping("/api/unicambistas")
 public class UniCambistaController {
 
-    private final RegistrarUniCambistaUseCase registrarUniCambista;
+    private final RegistrarCuentaUseCase registrarCuenta;
     private final VerificarCorreoUseCase verificarCorreo;
     private final UniCambistaRestMapper mapper;
 
-    public UniCambistaController(RegistrarUniCambistaUseCase registrarUniCambista,
+    public UniCambistaController(RegistrarCuentaUseCase registrarCuenta,
                                  VerificarCorreoUseCase verificarCorreo,
                                  UniCambistaRestMapper mapper) {
-        this.registrarUniCambista = registrarUniCambista;
+        this.registrarCuenta = registrarCuenta;
         this.verificarCorreo = verificarCorreo;
         this.mapper = mapper;
     }
@@ -35,7 +35,7 @@ public class UniCambistaController {
     /** 201 Created + cabecera Location apuntando al recurso nuevo. */
     @PostMapping
     public ResponseEntity<UniCambistaResponse> registrar(@Valid @RequestBody RegistrarUniCambistaBody body) {
-        UniCambistaResponse creado = registrarUniCambista.ejecutar(mapper.toRequest(body));
+        UniCambistaResponse creado = registrarCuenta.ejecutar(mapper.toRequest(body));
         return ResponseEntity.created(URI.create("/api/unicambistas/" + creado.correoInstitucional())).body(creado);
     }
 
