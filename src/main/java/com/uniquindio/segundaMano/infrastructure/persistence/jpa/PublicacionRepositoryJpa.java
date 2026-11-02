@@ -2,6 +2,8 @@ package com.uniquindio.segundaMano.infrastructure.persistence.jpa;
 
 import com.uniquindio.segundaMano.domain.entity.Publicacion;
 import com.uniquindio.segundaMano.domain.entity.UniCambista;
+import com.uniquindio.segundaMano.domain.repository.CriteriosBusquedaPublicacion;
+import com.uniquindio.segundaMano.domain.repository.Pagina;
 import com.uniquindio.segundaMano.domain.repository.PublicacionRepository;
 import com.uniquindio.segundaMano.domain.repository.UniCambistaRepository;
 import com.uniquindio.segundaMano.domain.valueObject.EstadoPublicacion;
@@ -9,7 +11,9 @@ import com.uniquindio.segundaMano.infrastructure.persistence.jpa.entity.Publicac
 import com.uniquindio.segundaMano.infrastructure.persistence.jpa.mapper.PublicacionPersistenceMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Optional;
@@ -59,6 +63,22 @@ public class PublicacionRepositoryJpa implements PublicacionRepository {
                 .map(codigo -> publicacionJpa.findById(codigo).orElseThrow())
                 .map(this::aDominio)
                 .toList();
+    }
+
+    /**
+     * Aquí (en infraestructura) y solo aquí se traduce entre los tipos del dominio
+     * (CriteriosBusquedaPublicacion, Pagina) y los de Spring (PageRequest, Page).
+     */
+    @Override
+    public Pagina<Publicacion> buscar(CriteriosBusquedaPublicacion c) {
+        PageRequest pageRequest = PageRequest.of(c.pagina(), c.tamano(),
+                Sort.by("valor").ascending().and(Sort.by("codigo").ascending()));
+        String texto = (c.texto() == null) ? "" : c.texto();
+        Page<PublicacionEntity> resultado = publicacionJpa.buscar(EstadoPublicacion.ACTIVA, texto, c.curso(),
+                c.valorMin(), c.valorMax(), pageRequest);
+        List<Publicacion> contenido = resultado.getContent().stream().map(this::aDominio).toList();
+        return new Pagina<>(contenido, resultado.getTotalElements(), resultado.getTotalPages(),
+                c.pagina(), c.tamano());
     }
 
     private Publicacion aDominio(PublicacionEntity entity) {

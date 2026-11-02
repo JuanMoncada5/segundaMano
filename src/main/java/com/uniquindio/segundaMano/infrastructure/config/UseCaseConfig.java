@@ -96,4 +96,9 @@ public class UseCaseConfig {
                                                                  UniCambistaRepository uniCambistas) {
         return new EliminarPublicacionUseCase(publicaciones, uniCambistas);
     }
+
+    @Bean
+    public BuscarPublicacionesUseCase buscarPublicacionesUseCase(PublicacionRepository publicaciones) {
+        return new BuscarPublicacionesUseCase(publicaciones);
+    }
 }
