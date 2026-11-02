@@ -4,17 +4,7 @@ import com.uniquindio.segundaMano.application.auth.RegistrarCuentaUseCase;
 import com.uniquindio.segundaMano.application.dto.OfertaResponse;
 import com.uniquindio.segundaMano.application.dto.PublicacionResponse;
 import com.uniquindio.segundaMano.application.dto.TransaccionResponse;
-import com.uniquindio.segundaMano.application.usecase.AceptarOfertaUseCase;
-import com.uniquindio.segundaMano.application.usecase.AsignarEncuentroSeguroUseCase;
-import com.uniquindio.segundaMano.application.usecase.ConfirmarTransaccionUseCase;
-import com.uniquindio.segundaMano.application.usecase.ConsultarPublicacionUseCase;
-import com.uniquindio.segundaMano.application.usecase.ConsultarTransaccionUseCase;
-import com.uniquindio.segundaMano.application.usecase.ListarPublicacionesActivasUseCase;
-import com.uniquindio.segundaMano.application.usecase.ListarTransaccionesDeUniCambistaUseCase;
-import com.uniquindio.segundaMano.application.usecase.OfertarArticuloUseCase;
-import com.uniquindio.segundaMano.application.usecase.PublicarArticuloUseCase;
-import com.uniquindio.segundaMano.application.usecase.RegistrarUniCambistaUseCase;
-import com.uniquindio.segundaMano.application.usecase.VerificarCorreoUseCase;
+import com.uniquindio.segundaMano.application.usecase.*;
 import com.uniquindio.segundaMano.domain.exception.RecursoNoEncontradoException;
 import com.uniquindio.segundaMano.domain.exception.ReglaDominioException;
 import com.uniquindio.segundaMano.domain.repository.PublicacionRepository;
@@ -81,7 +71,8 @@ class ApiRestFlujoTest {
                 new AceptarOfertaUseCase(publicaciones, transacciones, uniCambistas),
                 new PublicacionRestMapper());
         consultaPublicaciones = new ConsultaPublicacionesController(new ListarPublicacionesActivasUseCase(publicaciones),
-                new ConsultarPublicacionUseCase(publicaciones));
+                new ConsultarPublicacionUseCase(publicaciones),
+                new BuscarPublicacionesUseCase(publicaciones));
         transaccionController = new TransaccionController(
                 new AsignarEncuentroSeguroUseCase(transacciones, uniCambistas),
                 new ConfirmarTransaccionUseCase(transacciones, uniCambistas),
@@ -143,12 +134,13 @@ class ApiRestFlujoTest {
     }
 
     @Test
-    void elManejadorConvierteLaReglaDeDominioEnUn400() {
-        ErrorApi error = new ManejadorGlobalDeExcepciones()
+    void elManejadorConvierteLaReglaDeDominioEnUn422() {
+        ResponseEntity<ErrorApi> respuesta = new ManejadorGlobalDeExcepciones()
                 .manejarReglaDominio(new ReglaDominioException("El correo debe ser institucional"));
 
-        assertEquals(400, error.estado());
-        assertEquals("El correo debe ser institucional", error.mensaje());
+        assertEquals(422, respuesta.getStatusCode().value());
+        assertEquals(422, respuesta.getBody().estado());
+        assertEquals("El correo debe ser institucional", respuesta.getBody().mensaje());
     }
 
     @Test

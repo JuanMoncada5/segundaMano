@@ -3,6 +3,8 @@ package com.uniquindio.segundaMano.infrastructure.persistence.jpa;
 import com.uniquindio.segundaMano.domain.entity.Oferta;
 import com.uniquindio.segundaMano.domain.entity.Publicacion;
 import com.uniquindio.segundaMano.domain.entity.UniCambista;
+import com.uniquindio.segundaMano.domain.repository.CriteriosBusquedaPublicacion;
+import com.uniquindio.segundaMano.domain.repository.Pagina;
 import com.uniquindio.segundaMano.domain.repository.PublicacionRepository;
 import com.uniquindio.segundaMano.domain.repository.UniCambistaRepository;
 import com.uniquindio.segundaMano.domain.valueObject.EstadoOferta;
@@ -94,5 +96,39 @@ class PublicacionRepositoryJpaTest {
 
         // Assert
         assertEquals(List.of("PUB-001", "PUB-003"), top2.stream().map(Publicacion::getCodigo).toList());
+    }
+    @Test
+    void laBusquedaPaginadaDeberiaFiltrarEnLaBaseDeDatosYDarLosTotales() {
+        // Arrange: activas con valor <= 100.000 en data.sql: PUB-003 (40.000), PUB-004 (60.000), PUB-002 (80.000)
+        CriteriosBusquedaPublicacion primeraPagina =
+                new CriteriosBusquedaPublicacion(null, null, null, new BigDecimal("100000"), 0, 2);
+        CriteriosBusquedaPublicacion segundaPagina =
+                new CriteriosBusquedaPublicacion(null, null, null, new BigDecimal("100000"), 1, 2);
+
+        // Act
+        Pagina<Publicacion> pagina0 = publicacionRepository.buscar(primeraPagina);
+        Pagina<Publicacion> pagina1 = publicacionRepository.buscar(segundaPagina);
+
+        // Assert: ordenadas por valor, de 2 en 2
+        assertEquals(List.of("PUB-003", "PUB-004"), pagina0.contenido().stream().map(Publicacion::getCodigo).toList());
+        assertEquals(List.of("PUB-002"), pagina1.contenido().stream().map(Publicacion::getCodigo).toList());
+        assertEquals(3, pagina0.totalElementos());
+        assertEquals(2, pagina0.totalPaginas());
+    }
+
+    @Test
+    void laBusquedaNuncaDevuelveLasEliminadasYFiltraPorTextoYCurso() {
+        // Act: PUB-005 "Monitor 24 pulgadas" existe en data.sql pero está ELIMINADA
+        Pagina<Publicacion> monitor = publicacionRepository.buscar(
+                new CriteriosBusquedaPublicacion("monitor", null, null, null, 0, 10));
+        Pagina<Publicacion> calculadora = publicacionRepository.buscar(
+                new CriteriosBusquedaPublicacion("CALC", null, null, null, 0, 10));
+        Pagina<Publicacion> calculo = publicacionRepository.buscar(
+                new CriteriosBusquedaPublicacion(null, "cálculo i", null, null, 0, 10));
+
+        // Assert
+        assertEquals(0, monitor.totalElementos());
+        assertEquals(List.of("PUB-001"), calculadora.contenido().stream().map(Publicacion::getCodigo).toList());
+        assertEquals(List.of("PUB-002"), calculo.contenido().stream().map(Publicacion::getCodigo).toList());
     }
 }

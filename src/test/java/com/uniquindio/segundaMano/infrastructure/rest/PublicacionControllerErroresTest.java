@@ -74,7 +74,7 @@ class PublicacionControllerErroresTest {
     }
 
     @Test
-    void ofertarMenosDelCincuentaPorCientoDeberiaResponder400YNoGuardarNada() throws Exception {
+    void ofertarMenosDelCincuentaPorCientoDeberiaResponder422YNoGuardarNada() throws Exception {
         // Arrange: una Publicación de 150.000 y un comprador verificado
         UniCambista vendedora = UniCambista.registrar("ana@uqvirtual.edu.co", "Ana");
         vendedora.verificarCorreo();
@@ -91,8 +91,8 @@ class PublicacionControllerErroresTest {
                         .content("""
                                 { "montoPropuesto": 50000 }
                                 """))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.estado").value(400))
+                .andExpect(status().is(422))
+                .andExpect(jsonPath("$.estado").value(422))
                 .andExpect(jsonPath("$.mensaje").value("El monto no puede ser menor al 50% del precio original"));
 
         verify(publicacionRepository, never()).guardar(any());

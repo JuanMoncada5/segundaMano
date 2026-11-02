@@ -14,4 +14,10 @@ public interface PublicacionRepository {
     List<Publicacion> listarActivas();
 
     List<Publicacion> listarMasOfertadas(int limite);
+
+    /**
+     * Búsqueda paginada: solo Publicaciones ACTIVAS (nunca las eliminadas), filtradas por
+     * texto en el título, curso y rango de valor. El filtrado y el conteo los hace la base de datos.
+     */
+    Pagina<Publicacion> buscar(CriteriosBusquedaPublicacion criterios);
 }
