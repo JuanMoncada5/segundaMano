@@ -1,5 +1,10 @@
 package com.uniquindio.segundaMano.infrastructure.security;
 
+import org.springframework.security.config.Customizer;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +41,8 @@ public class SecurityConfig {
         http
                 // API sin sesión y sin formularios: el token va en cada petición, CSRF no aplica
                 .csrf(csrf -> csrf.disable())
+                // CORS: deja que Angular (otro origen) llame a la API; la configuración está en corsConfigurationSource()
+                .cors(Customizer.withDefaults())
                 .sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // la consola H2 se muestra dentro de un iframe
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
@@ -83,5 +90,23 @@ public class SecurityConfig {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(roles);
         return converter;
+    }
+    /**
+     * Qué orígenes, métodos y encabezados acepta la API cuando la llama un navegador.
+     * El origen sale de application.properties (app.cors.origenes-permitidos), no del código.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${app.cors.origenes-permitidos}") List<String> origenesPermitidos) {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(origenesPermitidos);
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setExposedHeaders(List.of("Location"));
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource fuente = new UrlBasedCorsConfigurationSource();
+        fuente.registerCorsConfiguration("/**", config);
+        return fuente;
     }
 }
