@@ -1,0 +1,8 @@
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1100; max-width: 400px;">
+  @for (aviso of avisoService.avisos(); track aviso.id) {
+    <div [class]="'alert alert-dismissible shadow alert-' + aviso.tipo" role="alert">
+      {{ aviso.texto }}
+      <button type="button" class="btn-close" aria-label="Cerrar" (click)="avisoService.cerrar(aviso.id)"></button>
+    </div>
+  }
+</div>

@@ -1,0 +1,37 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" routerLink="/catalogo">UniSegundaMano</a>
+
+    <!-- Botón hamburguesa: aparece en pantallas pequeñas -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
+            aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir menú">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="menuPrincipal">
+      @if (auth.autenticado()) {
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/catalogo" routerLinkActive="active">Catálogo</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/mis-transacciones" routerLinkActive="active">Mis transacciones</a>
+          </li>
+          @if (auth.esAdmin()) {
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/admin/ranking" routerLinkActive="active">Ranking (admin)</a>
+            </li>
+          }
+        </ul>
+        <span class="navbar-text text-white small me-3">{{ auth.correo() }}</span>
+        <button class="btn btn-outline-light btn-sm" (click)="auth.logout()">Cerrar sesión</button>
+      } @else {
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/login" routerLinkActive="active">Iniciar sesión</a>
+          </li>
+        </ul>
+      }
+    </div>
+  </div>
+</nav>
