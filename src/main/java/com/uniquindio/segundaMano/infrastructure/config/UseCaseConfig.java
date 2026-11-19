@@ -4,6 +4,7 @@ import com.uniquindio.segundaMano.application.usecase.*;
 import com.uniquindio.segundaMano.domain.repository.PublicacionRepository;
 import com.uniquindio.segundaMano.domain.repository.TransaccionRepository;
 import com.uniquindio.segundaMano.domain.repository.UniCambistaRepository;
+import com.uniquindio.segundaMano.application.usecase.CalificarUniCambistaUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -100,5 +101,9 @@ public class UseCaseConfig {
     @Bean
     public BuscarPublicacionesUseCase buscarPublicacionesUseCase(PublicacionRepository publicaciones) {
         return new BuscarPublicacionesUseCase(publicaciones);
+    }
+    @Bean
+    public CalificarUniCambistaUseCase calificarUniCambistaUseCase(TransaccionRepository transacciones, UniCambistaRepository uniCambistas) {
+        return new CalificarUniCambistaUseCase(transacciones, uniCambistas);
     }
 }

@@ -7,28 +7,35 @@ import java.math.BigDecimal;
 
 /**
  * zonaEncuentro y referenciaEncuentro pueden ser null mientras no se haya acordado el EncuentroSeguro.
+ * tituloPublicacion y los indicadores de calificación los usa el frontend (pantalla "Mis transacciones").
  */
 public record TransaccionResponse(
         String id,
         String codigoPublicacion,
+        String tituloPublicacion,
         String correoComprador,
         String correoVendedor,
         BigDecimal montoAcordado,
         String estado,
         String zonaEncuentro,
-        String referenciaEncuentro
+        String referenciaEncuentro,
+        boolean calificadaPorComprador,
+        boolean calificadaPorVendedor
 ) {
     public static TransaccionResponse desde(Transaccion transaccion) {
         EncuentroSeguro encuentro = transaccion.getEncuentroSeguro();
         return new TransaccionResponse(
                 transaccion.getId(),
                 transaccion.getPublicacion().getCodigo(),
+                transaccion.getPublicacion().getTitulo(),
                 transaccion.getComprador().getCorreoInstitucional(),
                 transaccion.getVendedor().getCorreoInstitucional(),
                 transaccion.getMontoAcordado(),
                 transaccion.getEstado().name(),
                 encuentro != null ? encuentro.zona().name() : null,
-                encuentro != null ? encuentro.referencia() : null
+                encuentro != null ? encuentro.referencia() : null,
+                transaccion.isCalificadaPorComprador(),
+                transaccion.isCalificadaPorVendedor()
         );
     }
 }
