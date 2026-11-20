@@ -1,0 +1,51 @@
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-0">Ranking de publicaciones</h1>
+    <p class="text-muted small mb-0">Publicaciones activas con más ofertas (solo administradores)</p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <label for="limite" class="form-label mb-0 small">Mostrar</label>
+    <select id="limite" class="form-select form-select-sm w-auto" [value]="limite()"
+            (change)="cambiarLimite($any($event.target).value)">
+      <option value="3">Top 3</option>
+      <option value="5">Top 5</option>
+      <option value="10">Top 10</option>
+    </select>
+  </div>
+</div>
+
+@if (ranking() === null) {
+  <div class="text-center py-5"><div class="spinner-border text-success"></div></div>
+} @else if (ranking()!.length === 0) {
+  <div class="alert alert-info">Todavía ninguna publicación activa ha recibido ofertas.</div>
+} @else {
+  <div class="card shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-success">
+          <tr>
+            <th>#</th>
+            <th>Publicación</th>
+            <th class="d-none d-md-table-cell">Dueño</th>
+            <th class="text-end">Valor</th>
+            <th class="text-center">Ofertas</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (fila of ranking(); track fila.codigo) {
+            <tr>
+              <td class="fw-bold">{{ fila.posicion }}</td>
+              <td>
+                {{ fila.titulo }}
+                <div class="small text-muted">{{ fila.codigo }}</div>
+              </td>
+              <td class="d-none d-md-table-cell small">{{ fila.correoDueno }}</td>
+              <td class="text-end">{{ fila.valor | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+              <td class="text-center"><span class="badge text-bg-success fs-6">{{ fila.cantidadOfertas }}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
