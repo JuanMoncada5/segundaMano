@@ -1,0 +1,65 @@
+<h1 class="h3 mb-1">Mis transacciones</h1>
+<p class="text-muted mb-4">Cuando una compra se completa, califica a la otra persona. Así se construye la confianza en UniSegundaMano.</p>
+
+@if (transacciones() === null) {
+  <div class="text-center py-5"><div class="spinner-border text-success"></div></div>
+} @else if (transacciones()!.length === 0) {
+  <div class="alert alert-info">Aún no tienes transacciones. Haz una oferta desde el catálogo.</div>
+} @else {
+  <div class="row row-cols-1 row-cols-lg-2 g-3">
+    @for (t of transacciones(); track t.id) {
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge text-bg-light border">{{ t.id }}</span>
+              <span class="badge" [class.text-bg-success]="t.estado === 'COMPLETADA'"
+                    [class.text-bg-warning]="t.estado !== 'COMPLETADA'">{{ t.estado }}</span>
+            </div>
+
+            <h2 class="h5 mb-1">{{ t.tituloPublicacion }}</h2>
+            <p class="mb-1">
+              @if (soyComprador(t)) { Le compraste a } @else { Le vendiste a }
+              <strong>{{ contraparte(t) }}</strong>
+            </p>
+            <p class="fw-bold text-success mb-1">{{ t.montoAcordado | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+            @if (t.zonaEncuentro) {
+              <p class="small text-muted mb-3">Encuentro: {{ t.zonaEncuentro }} · {{ t.referenciaEncuentro }}</p>
+            } @else {
+              <p class="small text-muted mb-3">Encuentro seguro aún sin acordar</p>
+            }
+
+            <div class="mt-auto border-top pt-3">
+              @if (puedeCalificar(t)) {
+                <p class="small mb-2">¿Cómo te fue con {{ contraparte(t) }}?</p>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <div class="btn-group" role="group" aria-label="Estrellas">
+                    @for (n of opciones; track n) {
+                      <button type="button" class="btn btn-sm"
+                              [class.btn-warning]="elegidas(t) >= n"
+                              [class.btn-outline-warning]="elegidas(t) < n"
+                              [attr.aria-label]="n + ' estrellas'"
+                              (click)="elegir(t, n)">★</button>
+                    }
+                  </div>
+                  <button type="button" class="btn btn-success btn-sm"
+                          [disabled]="elegidas(t) === 0 || enviando() === t.id" (click)="calificar(t)">
+                    @if (enviando() === t.id) {
+                      <span class="spinner-border spinner-border-sm me-1"></span>Enviando...
+                    } @else {
+                      Calificar
+                    }
+                  </button>
+                </div>
+              } @else if (yaCalifique(t)) {
+                <span class="text-success small">✓ Ya calificaste esta transacción</span>
+              } @else {
+                <span class="text-muted small">Podrás calificar cuando los dos confirmen la entrega.</span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}
