@@ -14,9 +14,11 @@
           <li class="nav-item">
             <a class="nav-link" routerLink="/catalogo" routerLinkActive="active">Catálogo</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/mis-transacciones" routerLinkActive="active">Mis transacciones</a>
-          </li>
+          @if (!auth.esAdmin()) {
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/mis-transacciones" routerLinkActive="active">Mis transacciones</a>
+            </li>
+          }
           @if (auth.esAdmin()) {
             <li class="nav-item">
               <a class="nav-link" routerLink="/admin/ranking" routerLinkActive="active">Ranking (admin)</a>
