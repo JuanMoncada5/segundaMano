@@ -38,3 +38,12 @@ export interface Oferta {
   montoPropuesto: number;
   estado: string;
 }
+
+
+/** Espejo de PublicarArticuloBody (POST /api/publicaciones). curso y semestre son opcionales. */
+export interface PublicarRequest {
+  titulo: string;
+  valor: number;
+  curso?: string | null;
+  semestre?: string | null;
+}

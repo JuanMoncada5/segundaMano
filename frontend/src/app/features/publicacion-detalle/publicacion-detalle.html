@@ -1,0 +1,71 @@
+<a routerLink="/catalogo" class="btn btn-link px-0 mb-3">&laquo; Volver al catálogo</a>
+
+@if (noEncontrada()) {
+  <div class="alert alert-warning">Esta publicación no existe o ya no está disponible.</div>
+}
+
+@if (publicacion(); as p) {
+  <div class="row g-4">
+    <!-- Información de la publicación -->
+    <div class="col-12 col-lg-7">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <div class="d-flex flex-wrap gap-2 mb-2">
+            <span class="badge text-bg-light border">{{ p.codigo }}</span>
+            <span class="badge text-bg-success">{{ p.estado }}</span>
+            @if (p.etiquetaVigenciaAcademica) {
+              <span class="badge text-bg-info">{{ p.etiquetaVigenciaAcademica }}</span>
+            }
+          </div>
+          <h1 class="h3">{{ p.titulo }}</h1>
+          <p class="display-6 fw-bold text-success">{{ p.valor | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          <p class="text-muted mb-0">Publicado por <strong>{{ p.correoDueno }}</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario de oferta (operación de negocio del comprador) -->
+    <div class="col-12 col-lg-5">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h2 class="h5">Hacer una oferta</h2>
+
+          @if (esMia()) {
+            <div class="alert alert-secondary mb-0">Esta publicación es tuya: no puedes ofertar sobre ella.</div>
+          } @else {
+            <p class="small text-muted">
+              La oferta mínima es el 50% del precio: {{ minimo() | currency:'COP':'symbol-narrow':'1.0-0' }}.
+            </p>
+            <form [formGroup]="form" (ngSubmit)="ofertar()" novalidate>
+              <div class="mb-3">
+                <label for="monto" class="form-label">Monto propuesto (COP)</label>
+                <input id="monto" type="number" min="1" class="form-control" formControlName="montoPropuesto"
+                       placeholder="Ej: 120000"
+                       [class.is-invalid]="form.controls.montoPropuesto.touched && form.controls.montoPropuesto.invalid">
+                @if (form.controls.montoPropuesto.touched && form.controls.montoPropuesto.hasError('required')) {
+                  <div class="invalid-feedback">Escribe el monto que quieres ofrecer.</div>
+                } @else if (form.controls.montoPropuesto.touched && form.controls.montoPropuesto.hasError('min')) {
+                  <div class="invalid-feedback">El monto debe ser mayor que cero.</div>
+                }
+              </div>
+              <button type="submit" class="btn btn-success w-100" [disabled]="form.invalid || enviando()">
+                @if (enviando()) {
+                  <span class="spinner-border spinner-border-sm me-2"></span>Enviando...
+                } @else {
+                  Enviar oferta
+                }
+              </button>
+            </form>
+
+            @if (ofertaEnviada(); as o) {
+              <div class="alert alert-success mt-3 mb-0">
+                Tu oferta <strong>{{ o.id }}</strong> por {{ o.montoPropuesto | currency:'COP':'symbol-narrow':'1.0-0' }}
+                quedó en estado <strong>{{ o.estado }}</strong>. El vendedor la revisará.
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
