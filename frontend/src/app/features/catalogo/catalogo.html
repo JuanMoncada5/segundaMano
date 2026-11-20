@@ -1,1 +1,82 @@
-<p>catalogo works!</p>
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+  <h1 class="h3 mb-0">Catálogo</h1>
+  <div class="d-flex align-items-center gap-3">
+    @if (resultado(); as r) {
+      <span class="text-muted small">{{ r.totalElementos }} publicaciones encontradas</span>
+    }
+    <a routerLink="/publicar" class="btn btn-success">+ Publicar artículo</a>
+  </div>
+</div>
+
+<!-- Filtros: cada cambio actualiza un Signal y se busca en el backend -->
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="row g-2 align-items-end">
+      <div class="col-12 col-md-5">
+        <label for="texto" class="form-label small">Buscar</label>
+        <input id="texto" type="search" class="form-control" placeholder="Ej: libro, calculadora, silla..."
+               [value]="texto()" (input)="cambiarTexto($any($event.target).value)">
+      </div>
+      <div class="col-6 col-md-3">
+        <label for="curso" class="form-label small">Curso</label>
+        <input id="curso" type="text" class="form-control" placeholder="Ej: Cálculo I"
+               [value]="curso()" (input)="cambiarCurso($any($event.target).value)">
+      </div>
+      <div class="col-6 col-md-2">
+        <label for="valorMax" class="form-label small">Valor máximo</label>
+        <input id="valorMax" type="number" min="0" class="form-control" placeholder="$"
+               [value]="valorMax() ?? ''" (input)="cambiarValorMax($any($event.target).value)">
+      </div>
+      <div class="col-12 col-md-2 d-grid">
+        <button type="button" class="btn btn-outline-secondary" (click)="limpiar()">Limpiar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (cargando() && !resultado()) {
+  <div class="text-center py-5"><div class="spinner-border text-success"></div></div>
+}
+
+@if (sinResultados()) {
+  <div class="alert alert-info text-center">
+    No se encontraron publicaciones con esos filtros. Prueba con otra palabra o quita filtros.
+  </div>
+}
+
+<!-- Grid de cards: 1 columna en celular, 2 en tablet, 3 en escritorio -->
+@if (resultado(); as r) {
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3" [class.opacity-50]="cargando()">
+    @for (p of r.contenido; track p.codigo) {
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge text-bg-light border">{{ p.codigo }}</span>
+              @if (p.etiquetaVigenciaAcademica) {
+                <span class="badge text-bg-info">{{ p.etiquetaVigenciaAcademica }}</span>
+              }
+            </div>
+            <h2 class="h5 card-title">{{ p.titulo }}</h2>
+            <p class="fs-4 fw-bold text-success mb-1">{{ p.valor | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+            <p class="small text-muted mb-3">Publicado por {{ p.correoDueno }}</p>
+            <a class="btn btn-success mt-auto" [routerLink]="['/publicaciones', p.codigo]">Ver y ofertar</a>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Paginación (la hace el backend con pagina y tamano) -->
+  @if (r.totalElementos > 0) {
+    <nav class="d-flex justify-content-center align-items-center gap-3 mt-4" aria-label="Paginación">
+      <button type="button" class="btn btn-outline-success" [disabled]="!hayAnterior() || cargando()" (click)="anterior()">
+        &laquo; Anterior
+      </button>
+      <span class="fw-semibold">Página {{ pagina() + 1 }} de {{ totalPaginas() }}</span>
+      <button type="button" class="btn btn-outline-success" [disabled]="!haySiguiente() || cargando()" (click)="siguiente()">
+        Siguiente &raquo;
+      </button>
+    </nav>
+  }
+}

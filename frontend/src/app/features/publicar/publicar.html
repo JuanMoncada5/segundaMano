@@ -1,0 +1,58 @@
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-6">
+    <a routerLink="/catalogo" class="btn btn-link px-0 mb-3">&laquo; Volver al catálogo</a>
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-4">Publicar un artículo</h1>
+
+        <form [formGroup]="form" (ngSubmit)="publicar()" novalidate>
+          <div class="mb-3">
+            <label for="titulo" class="form-label">Título</label>
+            <input id="titulo" type="text" class="form-control" formControlName="titulo"
+                   placeholder="Ej: Libro Química General"
+                   [class.is-invalid]="form.controls.titulo.touched && form.controls.titulo.invalid">
+            @if (form.controls.titulo.touched && form.controls.titulo.hasError('required')) {
+              <div class="invalid-feedback">El título es obligatorio.</div>
+            } @else if (form.controls.titulo.touched && form.controls.titulo.hasError('maxlength')) {
+              <div class="invalid-feedback">Máximo 100 caracteres.</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label for="valor" class="form-label">Precio (COP)</label>
+            <input id="valor" type="number" min="1" class="form-control" formControlName="valor"
+                   placeholder="Ej: 50000"
+                   [class.is-invalid]="form.controls.valor.touched && form.controls.valor.invalid">
+            @if (form.controls.valor.touched && form.controls.valor.invalid) {
+              <div class="invalid-feedback">Escribe un precio mayor que cero.</div>
+            }
+          </div>
+
+          <p class="small text-muted mb-2">Si es material de una materia, indica el curso y el semestre (opcional):</p>
+          <div class="row g-2 mb-4">
+            <div class="col-7">
+              <label for="curso" class="form-label">Curso</label>
+              <input id="curso" type="text" class="form-control" formControlName="curso" placeholder="Ej: Química General">
+            </div>
+            <div class="col-5">
+              <label for="semestre" class="form-label">Semestre</label>
+              <input id="semestre" type="text" class="form-control" formControlName="semestre" placeholder="2026-2"
+                     [class.is-invalid]="form.controls.semestre.touched && form.controls.semestre.invalid">
+              @if (form.controls.semestre.touched && form.controls.semestre.invalid) {
+                <div class="invalid-feedback">Formato: 2026-1 o 2026-2.</div>
+              }
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-success w-100" [disabled]="form.invalid || enviando()">
+            @if (enviando()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>Publicando...
+            } @else {
+              Publicar
+            }
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

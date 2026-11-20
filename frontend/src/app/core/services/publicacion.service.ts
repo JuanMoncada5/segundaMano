@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { FiltrosBusqueda, Oferta, OfertarRequest, Pagina, Publicacion } from '../models/publicacion.model';
+import { FiltrosBusqueda, Oferta, OfertarRequest, Pagina, Publicacion, PublicarRequest } from '../models/publicacion.model';
 
 /** Servicio del grupo /api/publicaciones. El token lo agrega el interceptor, no este servicio. */
 @Injectable({ providedIn: 'root' })
@@ -27,5 +27,10 @@ export class PublicacionService {
   /** Operación de negocio: ofertar. Quién oferta sale del token en el backend. */
   ofertar(codigo: string, oferta: OfertarRequest): Observable<Oferta> {
     return this.http.post<Oferta>(`${this.url}/${codigo}/ofertas`, oferta);
+  }
+
+  /** Operación del vendedor: publicar un artículo. El dueño sale del token en el backend. */
+  publicar(datos: PublicarRequest): Observable<Publicacion> {
+    return this.http.post<Publicacion>(this.url, datos);
   }
 }
