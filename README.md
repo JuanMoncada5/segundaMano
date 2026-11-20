@@ -185,3 +185,71 @@ simula todo lo demás, esta prueba detecta errores que aparecen cuando las pieza
 como un mapper mal hecho, una columna mal nombrada o una ruta equivocada. La desventaja es que
 es más lenta y depende de los datos de `data.sql`. Por eso conviene hacer pocas, solo para los
 flujos más importantes, y dejar los casos de borde a las pruebas unitarias.
+
+## Entrega 3 · Frontend en Angular
+
+**Nicho:** UniSegundaMano es un marketplace de artículos de segunda mano entre estudiantes de la
+Universidad del Quindío (libros, calculadoras, batas, implementos). Las entregas se hacen en
+**Encuentros Seguros** dentro del campus y, al terminar, comprador y vendedor se califican.
+
+**Integrantes:** Juan Moncada · Juan Manuel Rincón
+
+**Funcionalidad propia:** calificar al UniCambista después de una transacción completada
+(1 a 5 estrellas). Actualiza su RachaConfianza; nadie puede calificar dos veces ni calificar
+una transacción pendiente o en la que no participó.
+
+### Cómo ejecutar
+
+**Requisitos:** Java 21, Node 20.19 o superior, Angular CLI 21 (`npm install -g @angular/cli@21`).
+
+1. **Backend** (puerto 8080), desde la raíz del proyecto:
+   ```bash
+   ./gradlew bootRun        # en Windows CMD: gradlew.bat bootRun
+   ```
+   Usa H2 en memoria y carga los datos de prueba de `data.sql` (se reinician en cada arranque).
+   Swagger: http://localhost:8080/swagger-ui.html
+2. **Frontend** (puerto 4200), en otra terminal:
+   ```bash
+   cd frontend
+   npm install
+   ng serve
+   ```
+   Abrir http://localhost:4200. La URL del backend está en `frontend/src/environments/`.
+
+### Usuarios de prueba
+
+Contraseña de todos: `Clave123*`
+
+| Correo | Rol | Datos útiles |
+|---|---|---|
+| ana@uqvirtual.edu.co | UNICAMBISTA | Vendedora en TRX-001 (completada) |
+| luis@uqvirtual.edu.co | UNICAMBISTA | Comprador en TRX-001: puede calificar a Ana |
+| sofia@uqvirtual.edu.co | UNICAMBISTA | Vendedora en TRX-002 (pendiente) |
+| carlos@uniquindio.edu.co | UNICAMBISTA | Comprador en TRX-002 (pendiente) |
+| admin@uniquindio.edu.co | ADMIN | Ranking de publicaciones |
+
+### Pantallas
+
+| Ruta | Pantalla | Protección |
+|---|---|---|
+| `/login` | Inicio de sesión (formulario reactivo con validaciones) | `invitadoGuard`: si ya hay sesión, va al catálogo |
+| `/catalogo` | Catálogo en tarjetas, paginado y con búsqueda reactiva (Signals + debounce) en el backend | `authGuard` |
+| `/publicaciones/:codigo` | Detalle de la publicación y formulario para **ofertar** (comprador) | `authGuard` |
+| `/publicar` | Formulario para **publicar un artículo** (vendedor) | `authGuard` |
+| `/mis-transacciones` | Mis transacciones y **calificar** a la otra persona (funcionalidad propia) | `authGuard` |
+| `/admin/ranking` | Ranking de publicaciones con más ofertas | `authGuard` + `adminGuard` (solo ADMIN) |
+
+### Cómo está organizado el frontend
+
+- `core/models`: interfaces espejo de los DTO del backend (mismos nombres de campos).
+- `core/services`: un servicio por grupo de endpoints (`AuthService`, `PublicacionService`,
+  `TransaccionService`, `ReporteService`) y `AvisoService` para las notificaciones.
+- `core/interceptors/auth.interceptor.ts`: agrega `Authorization: Bearer <token>` y maneja el 401.
+- `core/guards/auth.guards.ts`: `authGuard`, `invitadoGuard` y `adminGuard`.
+- `features/*`: una carpeta por pantalla. `shared/*`: navbar y avisos.
+
+### Extras implementados
+
+- Búsqueda reactiva con Signals (debounce de 300 ms).
+- Guard por rol (`adminGuard`) y menú que oculta la opción a quien no es ADMIN.
+- Buenas prácticas: URL del backend en variables de entorno, carpetas por funcionalidad.
